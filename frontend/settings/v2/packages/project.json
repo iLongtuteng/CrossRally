@@ -1,0 +1,34 @@
+{
+  "__version__": "1.0.4",
+  "general": {
+    "designResolution": {
+      "width": 1280,
+      "height": 720,
+      "fitWidth": false,
+      "fitHeight": true
+    }
+  },
+  "layer": [
+    {
+      "name": "canvas_5",
+      "value": 32
+    },
+    {
+      "name": "canvas_10",
+      "value": 1024
+    }
+  ],
+  "custom_joint_texture_layouts": [],
+  "physics": {
+    "collisionGroups": [
+      {
+        "index": 1,
+        "name": "BALL"
+      }
+    ],
+    "collisionMatrix": {
+      "0": 3,
+      "1": 1
+    }
+  }
+}

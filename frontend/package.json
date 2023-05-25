@@ -1,0 +1,11 @@
+{
+  "name": "frontend",
+  "uuid": "98e12abc-81ec-4984-986e-fd0382c22f5f",
+  "creator": {
+    "version": "3.7.2"
+  },
+  "dependencies": {
+    "tsrpc-browser": "^3.4.1",
+    "tsrpc-miniapp": "^3.4.1"
+  }
+}
