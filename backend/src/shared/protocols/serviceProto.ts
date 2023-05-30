@@ -53,7 +53,7 @@ export interface ServiceType {
 }
 
 export const serviceProto: ServiceProto<ServiceType> = {
-    "version": 10,
+    "version": 11,
     "services": [
         {
             "id": 11,
@@ -271,8 +271,8 @@ export const serviceProto: ServiceProto<ServiceType> = {
                     }
                 },
                 {
-                    "id": 4,
-                    "name": "winDis",
+                    "id": 5,
+                    "name": "difficulty",
                     "type": {
                         "type": "Number"
                     }
@@ -696,6 +696,13 @@ export const serviceProto: ServiceProto<ServiceType> = {
         "server/MsgNotifyReady/MsgNotifyReady": {
             "type": "Interface",
             "properties": [
+                {
+                    "id": 2,
+                    "name": "difficulty",
+                    "type": {
+                        "type": "Number"
+                    }
+                },
                 {
                     "id": 0,
                     "name": "hillArr",

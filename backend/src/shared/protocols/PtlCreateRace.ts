@@ -3,7 +3,7 @@ import { BaseRequest, BaseResponse, BaseConf } from "./base";
 export interface ReqCreateRace extends BaseRequest {
     name: string,
     teamArr: number[],
-    winDis: number
+    difficulty: number
 }
 
 export interface ResCreateRace extends BaseResponse {

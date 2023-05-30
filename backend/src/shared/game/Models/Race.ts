@@ -25,7 +25,8 @@ export class Race implements RaceType {
     hillArr: Hill[] = [];
     // key：竞赛的团队索引；value：每个团队成员的连接
     teamMap: Map<number, WsConnection<ServiceType>[]> = new Map<number, WsConnection<ServiceType>[]>();
-    winDis: number = 0;
+    difficulty: number = 1;
+    winDis: number = 100;
     isStart: boolean = false;
     creatorId: number = 0;
     gameSystem!: GameSystem;
@@ -33,11 +34,30 @@ export class Race implements RaceType {
     conns: WsConnection<ServiceType>[] = [];
     interval!: NodeJS.Timeout;
 
-    constructor(id: number, name: string, teamArr: number[], winDis: number, creatorId: number) {
+    constructor(id: number, name: string, teamArr: number[], difficulty: number, creatorId: number) {
         this.id = id;
         this.name = name;
         this.teamArr = teamArr;
-        this.winDis = winDis;
+        this.difficulty = difficulty;
+
+        switch (difficulty) {
+            case 0:
+                this.winDis = 50;
+                break;
+
+            case 1:
+                this.winDis = 100;
+                break;
+
+            case 2:
+                this.winDis = 150;
+                break;
+
+            default:
+                this.winDis = 50;
+                break;
+        }
+
         this.hillArr = this.generateHillArr();
         this.creatorId = creatorId;
         this.pendingInputs = [];

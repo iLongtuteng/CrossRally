@@ -32,7 +32,7 @@ export class GameSystem {
         return this._state;
     }
 
-    private _winDis: number = 0;
+    private _winDis: number = 100;
 
     constructor(winDis: number, teamMap: Map<number, number[]>) {
         this._winDis = winDis;

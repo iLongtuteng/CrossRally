@@ -12,13 +12,21 @@ export class GameManager {
 
     private _client: BaseWsClient<ServiceType>;
     private _raceId: number = 0;
+    private _isInit: boolean = false;
     public selfPlayerId: number = 0;
+    public difficulty: number = 1;
     public hillArr: Hill[] = [];
-    public winDis: number = 0;
+    public winDis: number = 100;
+    public delayTime: number = 2000;
+    public isHardware: boolean = false;
 
-    constructor() {
+    public initClient(host?: string): void {
+        if (this._isInit) {
+            return;
+        }
+
         this._client = new (MINIGAME ? WsClientMiniapp : WsClientBrowser)(serviceProto, {
-            server: `ws://${location.hostname}:3000`,
+            server: host ? 'ws://' + host + ':3000' : `ws://${location.hostname}:3000`,
             json: true,
             // logger: console,
             heartbeat: {
@@ -33,6 +41,7 @@ export class GameManager {
             GameMsgs.send<any>(GameMsgs.Names.CreatorLeave);
         });
         this._client.listenMsg('server/NotifyReady', msg => {
+            this.difficulty = msg.difficulty;
             this.hillArr = msg.hillArr;
             this.winDis = msg.winDis;
             GameMsgs.send<any>(GameMsgs.Names.ReadyEnterRace);
@@ -40,6 +49,8 @@ export class GameManager {
         this._client.listenMsg('server/Frame', msg => {
             GameMsgs.send<GameSystemState>(GameMsgs.Names.ApplySystemState, msg.state);
         });
+        this._isInit = true;
+        console.log('客户端初始化成功');
     }
 
     public async connect(cb: Function): Promise<void> {
@@ -71,11 +82,11 @@ export class GameManager {
         console.log('登录成功, playerId: ' + this.selfPlayerId);
     }
 
-    public async createRace(name: string, teamArr: number[], teamIdx: number, winDis: number, succCb: Function, errCb: Function): Promise<void> {
+    public async createRace(name: string, teamArr: number[], difficulty: number, teamIdx: number, succCb: Function, errCb: Function): Promise<void> {
         let ret = await this._client.callApi('CreateRace', {
             name: name,
             teamArr: teamArr,
-            winDis: winDis
+            difficulty: difficulty
         });
 
         if (!ret.isSucc) {

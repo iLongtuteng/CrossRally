@@ -50,10 +50,23 @@ export class World extends Component {
 
             let g = first.node.getComponent(Graphics);
             g.clear();
+            g.fillColor.fromHEX('#7B4C1E');
             g.moveTo(points[0].x, points[0].y - 240);
             g.lineTo(points[1].x, points[1].y);
             g.lineTo(points[2].x, points[2].y);
             g.lineTo(points[3].x, points[3].y - 240);
+            g.fill();
+            g.fillColor.fromHEX('#67401B');
+            g.moveTo(points[0].x, points[1].y - 18);
+            g.lineTo(points[1].x, points[1].y);
+            g.lineTo(points[2].x, points[2].y);
+            g.lineTo(points[3].x, points[2].y - 18);
+            g.fill();
+            g.fillColor.fromHEX('#357E32');
+            g.moveTo(points[0].x, points[1].y - 10);
+            g.lineTo(points[1].x, points[1].y);
+            g.lineTo(points[2].x, points[2].y);
+            g.lineTo(points[3].x, points[2].y - 10);
             g.fill();
 
             hills.push(hills.shift());
@@ -72,11 +85,23 @@ export class World extends Component {
         collider.friction = 1;
 
         let g = node.addComponent(Graphics);
-        g.fillColor.fromHEX('#ff0000');
+        g.fillColor.fromHEX('#7B4C1E');
         g.moveTo(points[0].x, points[0].y - 240);
         g.lineTo(points[1].x, points[1].y);
         g.lineTo(points[2].x, points[2].y);
         g.lineTo(points[3].x, points[3].y - 240);
+        g.fill();
+        g.fillColor.fromHEX('#67401B');
+        g.moveTo(points[0].x, points[1].y - 18);
+        g.lineTo(points[1].x, points[1].y);
+        g.lineTo(points[2].x, points[2].y);
+        g.lineTo(points[3].x, points[2].y - 18);
+        g.fill();
+        g.fillColor.fromHEX('#357E32');
+        g.moveTo(points[0].x, points[1].y - 10);
+        g.lineTo(points[1].x, points[1].y);
+        g.lineTo(points[2].x, points[2].y);
+        g.lineTo(points[3].x, points[2].y - 10);
         g.fill();
 
         node.parent = this.node;

@@ -10,10 +10,7 @@ const { ccclass, property } = _decorator;
 export class CreateView extends FWKComponent {
 
     @property(Node)
-    teamChoose: Node;
-
-    @property(Prefab)
-    teamItemPrefab: Prefab;
+    startView: Node;
 
     @property(Prefab)
     warnPrefab: Prefab;
@@ -21,8 +18,20 @@ export class CreateView extends FWKComponent {
     @property(EditBox)
     nameBox: EditBox;
 
+    @property(Button)
+    easyBtn: Button;
+
+    @property(Button)
+    normalBtn: Button;
+
+    @property(Button)
+    hardBtn: Button;
+
     @property(Node)
-    startView: Node;
+    teamChoose: Node;
+
+    @property(Prefab)
+    teamItemPrefab: Prefab;
 
     @property(Node)
     block: Node;
@@ -30,19 +39,20 @@ export class CreateView extends FWKComponent {
     @property(Button)
     startBtn: Button;
 
+    private _difficulty: number = 1;
     private _teamArr: number[] = [];
     private _teamIdx: number = -1;
     private _teamItemArr: Node[] = [];
-    private _winDis: number = 50;
 
     onLoad() {
         this.startBtn.interactable = false;
+        this.onNormalBtn();
 
         let yOffset = 0;
         for (let i = 0; i < 5; i++) {
             let teamItem = instantiate(this.teamItemPrefab);
             teamItem.parent = this.teamChoose;
-            teamItem.position = new Vec3(100, yOffset, 0);
+            teamItem.position = new Vec3(80, yOffset, 0);
             yOffset -= teamItem.getComponent(UITransform).height;
             teamItem.getComponent(TeamItem).init(TeamItemType.CREATE, i);
             this._teamItemArr.push(teamItem);
@@ -55,8 +65,44 @@ export class CreateView extends FWKComponent {
         this._teamItemArr[this._teamIdx].getComponent(TeamItem).joinBtn.getComponent(Sprite).color = new Color().fromHEX('#5ABDFF');
     }
 
-    update(deltaTime: number) {
+    public onEasyBtn(): void {
+        this._difficulty = 0;
+        this._refreshDiff(this._difficulty);
+    }
 
+    public onNormalBtn(): void {
+        this._difficulty = 1;
+        this._refreshDiff(this._difficulty);
+    }
+
+    public onHardBtn(): void {
+        this._difficulty = 2;
+        this._refreshDiff(this._difficulty);
+    }
+
+    private _refreshDiff(num: number): void {
+        switch (num) {
+            case 0:
+                this.easyBtn.getComponent(Sprite).color = new Color().fromHEX("#5ABDFF");
+                this.normalBtn.getComponent(Sprite).color = new Color().fromHEX('#FFFFFF');
+                this.hardBtn.getComponent(Sprite).color = new Color().fromHEX("#FFFFFF");
+                break;
+
+            case 1:
+                this.easyBtn.getComponent(Sprite).color = new Color().fromHEX("#FFFFFF");
+                this.normalBtn.getComponent(Sprite).color = new Color().fromHEX('#5ABDFF');
+                this.hardBtn.getComponent(Sprite).color = new Color().fromHEX("#FFFFFF");
+                break;
+
+            case 2:
+                this.easyBtn.getComponent(Sprite).color = new Color().fromHEX("#FFFFFF");
+                this.normalBtn.getComponent(Sprite).color = new Color().fromHEX('#FFFFFF');
+                this.hardBtn.getComponent(Sprite).color = new Color().fromHEX("#5ABDFF");
+                break;
+
+            default:
+                break;
+        }
     }
 
     public onMsg_TeamToggleChecked(msg: FWKMsg<number>): boolean {
@@ -102,7 +148,7 @@ export class CreateView extends FWKComponent {
         return true;
     }
 
-    onCreateBtn() {
+    public onCreateBtn(): void {
         if (this.nameBox.textLabel.string == '') {
             let warn = instantiate(this.warnPrefab);
             warn.parent = this.node;
@@ -124,7 +170,7 @@ export class CreateView extends FWKComponent {
             return;
         }
 
-        gameManager.createRace(this.nameBox.textLabel.string, this._teamArr, this._teamIdx, this._winDis, () => {
+        gameManager.createRace(this.nameBox.textLabel.string, this._teamArr, this._difficulty, this._teamIdx, () => {
             this.startBtn.interactable = true;
             this.block.active = true;
         }, (err) => {
@@ -134,13 +180,13 @@ export class CreateView extends FWKComponent {
         });
     }
 
-    onStartBtn() {
+    public onStartBtn(): void {
         gameManager.readyRace(() => {
             this.startBtn.interactable = false;
         });
     }
 
-    onBackBtn() {
+    public onBackBtn(): void {
         this.startView.active = true;
         this.node.active = false;
     }

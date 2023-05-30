@@ -28,7 +28,7 @@ export class GameManager {
     }
 
     public createRace(req: ReqCreateRace, conn: WsConnection<ServiceType>): number {
-        let race = new Race(this._nextRaceId++, req.name, req.teamArr, req.winDis, conn.playerId!);
+        let race = new Race(this._nextRaceId++, req.name, req.teamArr, req.difficulty, conn.playerId!);
         this._raceList.push(race);
         server.broadcastMsg('server/RaceList', {
             list: this.getRaceIntroList()
@@ -109,6 +109,7 @@ export class GameManager {
                 }
 
                 server.broadcastMsg('server/NotifyReady', {
+                    difficulty: element.difficulty,
                     hillArr: element.hillArr,
                     winDis: element.winDis
                 }, connArr);

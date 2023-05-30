@@ -7,10 +7,14 @@ import { FWKMsg } from '../scripts/fwk/mvc/FWKMvc';
 import { GameSystemState, ResultType } from '../scripts/shared/game/GameSystem';
 import FWKComponent from '../scripts/fwk/FWKComponent';
 import { Battery } from '../resources/prefabs/Battery';
+import { Confirm } from '../resources/prefabs/Confirm';
 const { ccclass, property } = _decorator;
 
 @ccclass('Game')
 export class Game extends FWKComponent {
+
+    @property(Prefab)
+    confirmPrefab: Prefab;
 
     @property(Node)
     camera: Node;
@@ -31,6 +35,9 @@ export class Game extends FWKComponent {
     batteries: Node;
 
     @property(Node)
+    loading: Node;
+
+    @property(Node)
     result: Node;
 
     private _teamArr: number[] = []; // 加入竞赛的全部团队索引
@@ -43,6 +50,15 @@ export class Game extends FWKComponent {
     private _isFinish: boolean = false;
 
     async onLoad() {
+        window.addEventListener('message', this._onMessage);
+
+        if (gameManager.isHardware) {
+            this.loading.active = true;
+            this.scheduleOnce(() => {
+                this.loading.active = false;
+            }, gameManager.delayTime / 1000);
+        }
+
         let data = await gameManager.startRace();
         this._teamArr = data.teamArr;
         this._teamIdx = data.teamIdx;
@@ -87,7 +103,7 @@ export class Game extends FWKComponent {
             this._batteryMap.set(element, battery);
         }
 
-        input.on(Input.EventType.KEY_UP, this.onKeyUp, this);
+        input.on(Input.EventType.KEY_UP, this._onKeyUp, this);
 
         this._heartState = 0;
         gameManager.sendClientInput({
@@ -96,7 +112,36 @@ export class Game extends FWKComponent {
         });
     }
 
-    private onKeyUp(event: EventKeyboard): void {
+    onDestroy() {
+        window.removeEventListener('message', this._onMessage);
+        input.off(Input.EventType.KEY_UP, this._onKeyUp, this);
+    }
+
+    private _onMessage(e): void {
+        let obj = JSON.parse(e.data);
+
+        if (!this.loading.active) {
+            if (obj.type == 'state') {
+                console.log('obj.type == "state"');
+                if (obj.S != null) {
+                    console.log('obj.S: ' + obj.S);
+                    this._heartState = parseInt(obj.S);
+                }
+            }
+
+            if (obj.type == 'error') {
+                console.log('obj.type == "error"');
+                this._heartState = 0;
+            }
+
+            gameManager.sendClientInput({
+                type: 'PlayerHeart',
+                heartState: this._heartState
+            });
+        }
+    }
+
+    private _onKeyUp(event: EventKeyboard): void {
         switch (event.keyCode) {
             case KeyCode.ARROW_LEFT:
                 this._heartState = 0;
@@ -202,9 +247,33 @@ export class Game extends FWKComponent {
         }
     }
 
-    onQuitBtn() {
+    public onQuitBtn(): void {
         gameManager.leaveRace(() => {
+            this._endTraining();
             director.loadScene('Start');
         });
+    }
+
+    private _endTraining(): void {
+        if (gameManager.isHardware) {
+            const messageStr = JSON.stringify({
+                type: 'end',
+                save_data: false,
+                games: []
+            });
+            window.parent.postMessage(messageStr, '*');
+            console.log('end: ' + messageStr);
+        }
+    }
+
+    public onEndBtn(): void {
+        let confirmStr = '确定要结束训练吗？';
+        let confirm = instantiate(this.confirmPrefab);
+        confirm.getComponent(Confirm).init(this, confirmStr);
+        confirm.parent = this.node;
+    }
+
+    public onYesBtn(): void {
+        this.onQuitBtn();
     }
 }

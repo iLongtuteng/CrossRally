@@ -131,7 +131,7 @@ export class JoinView extends FWKComponent {
         return true;
     }
 
-    onReadyBtn() {
+    public onReadyBtn(): void {
         if (this._raceIdx < 0) {
             let warn = instantiate(this.warnPrefab);
             warn.parent = this.node;
@@ -159,7 +159,7 @@ export class JoinView extends FWKComponent {
         });
     }
 
-    onBackBtn() {
+    public onBackBtn(): void {
         this.startView.active = true;
         this.node.active = false;
     }
