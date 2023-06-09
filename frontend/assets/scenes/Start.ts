@@ -1,8 +1,9 @@
-import { _decorator, Animation, Button, director, Node } from 'cc';
+import { _decorator, Animation, assert, AudioSource, Button, director, find, Node, resources, SpriteFrame } from 'cc';
 import { gameManager } from '../scripts/game/GameManager';
 import FWKComponent from '../scripts/fwk/FWKComponent';
 import { FWKMsg } from '../scripts/fwk/mvc/FWKMvc';
 import { DEV } from 'cc/env';
+import { audioManager } from '../scripts/game/AudioManager';
 const { ccclass, property } = _decorator;
 
 @ccclass('Start')
@@ -23,7 +24,32 @@ export class Start extends FWKComponent {
     @property(Button)
     joinBtn: Button;
 
+    public greenSprite: SpriteFrame = null;
+    public blueSprite: SpriteFrame = null;
+
     onLoad() {
+        resources.load('textures/BtnGreenNormal/spriteFrame', SpriteFrame, (err, res) => {
+            if (err) {
+                console.log(err);
+            } else {
+                this.greenSprite = res;
+            }
+        });
+        resources.load('textures/BtnBlue/spriteFrame', SpriteFrame, (err, res) => {
+            if (err) {
+                console.log(err);
+            } else {
+                this.blueSprite = res;
+            }
+        });
+
+        if (!director.isPersistRootNode(find('AudioNode'))) {
+            director.addPersistRootNode(find('AudioNode'));
+            let audioSource = find('AudioNode').getComponent(AudioSource);
+            assert(audioSource);
+            audioManager.init(audioSource);
+        }
+
         window.addEventListener('message', this._onMessage);
 
         const messageStr = JSON.stringify({
@@ -97,11 +123,13 @@ export class Start extends FWKComponent {
     }
 
     public onCreateBtn(): void {
+        audioManager.playSound('Button');
         this.startView.active = false;
         this.createView.active = true;
     }
 
     public onJoinBtn(): void {
+        audioManager.playSound('Button');
         this.startView.active = false;
         this.joinView.active = true;
     }

@@ -117,7 +117,7 @@ export class GameManager {
 
         if (!ret.isSucc) {
             console.log(ret.err.message);
-            return null;
+            return [];
         }
 
         return ret.res.list;
@@ -141,7 +141,7 @@ export class GameManager {
 
         if (!ret.isSucc) {
             console.log(ret.err.message);
-            return;
+            return null;
         }
 
         return ret.res.data;

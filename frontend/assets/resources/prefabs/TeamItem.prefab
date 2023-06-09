@@ -110,8 +110,8 @@
     },
     "_lscale": {
       "__type__": "cc.Vec3",
-      "x": 1,
-      "y": 1,
+      "x": 1.2,
+      "y": 1.2,
       "z": 1
     },
     "_mobility": 0,
@@ -306,7 +306,7 @@
       "a": 255
     },
     "_spriteFrame": {
-      "__uuid__": "11bdc4b0-64a8-4eb7-a2a7-9fb9e233e977@f9941",
+      "__uuid__": "d7f15585-9561-4096-b0ce-797986cd3e42@f9941",
       "__expectedType__": "cc.SpriteFrame"
     },
     "_type": 0,
@@ -371,7 +371,7 @@
       "a": 255
     },
     "_normalSprite": {
-      "__uuid__": "11bdc4b0-64a8-4eb7-a2a7-9fb9e233e977@f9941",
+      "__uuid__": "d7f15585-9561-4096-b0ce-797986cd3e42@f9941",
       "__expectedType__": "cc.SpriteFrame"
     },
     "_hoverSprite": null,
@@ -442,7 +442,7 @@
     },
     "_lpos": {
       "__type__": "cc.Vec3",
-      "x": 60,
+      "x": 75,
       "y": 0,
       "z": 0
     },
@@ -482,7 +482,7 @@
     },
     "_contentSize": {
       "__type__": "cc.Size",
-      "width": 51.12,
+      "width": 46.68,
       "height": 50.4
     },
     "_anchorPoint": {
@@ -517,11 +517,11 @@
       "b": 255,
       "a": 255
     },
-    "_string": "第1队",
+    "_string": "1队",
     "_horizontalAlign": 1,
     "_verticalAlign": 1,
-    "_actualFontSize": 20,
-    "_fontSize": 20,
+    "_actualFontSize": 30,
+    "_fontSize": 30,
     "_fontFamily": "Arial",
     "_lineHeight": 40,
     "_overflow": 0,
@@ -530,7 +530,7 @@
     "_isSystemFontUsed": true,
     "_spacingX": 0,
     "_isItalic": false,
-    "_isBold": false,
+    "_isBold": true,
     "_isUnderline": false,
     "_underlineHeight": 2,
     "_cacheMode": 0,
@@ -582,7 +582,7 @@
     },
     "_lpos": {
       "__type__": "cc.Vec3",
-      "x": 160,
+      "x": 220,
       "y": 0,
       "z": 0
     },
@@ -632,7 +632,7 @@
     "_lpos": {
       "__type__": "cc.Vec3",
       "x": 0,
-      "y": 0,
+      "y": 4,
       "z": 0
     },
     "_lrot": {
@@ -701,16 +701,16 @@
     "_dstBlendFactor": 4,
     "_color": {
       "__type__": "cc.Color",
-      "r": 0,
-      "g": 0,
-      "b": 0,
+      "r": 255,
+      "g": 255,
+      "b": 255,
       "a": 255
     },
     "_string": "加入",
     "_horizontalAlign": 1,
     "_verticalAlign": 1,
-    "_actualFontSize": 20,
-    "_fontSize": 20,
+    "_actualFontSize": 30,
+    "_fontSize": 30,
     "_fontFamily": "Arial",
     "_lineHeight": 40,
     "_overflow": 1,
@@ -719,7 +719,7 @@
     "_isSystemFontUsed": true,
     "_spacingX": 0,
     "_isItalic": false,
-    "_isBold": false,
+    "_isBold": true,
     "_isUnderline": false,
     "_underlineHeight": 2,
     "_cacheMode": 0,
@@ -755,8 +755,8 @@
     },
     "_contentSize": {
       "__type__": "cc.Size",
-      "width": 100,
-      "height": 40
+      "width": 150,
+      "height": 70
     },
     "_anchorPoint": {
       "__type__": "cc.Vec2",
@@ -791,7 +791,7 @@
       "a": 255
     },
     "_spriteFrame": {
-      "__uuid__": "20835ba4-6145-4fbc-a58a-051ce700aa3e@f9941",
+      "__uuid__": "b3194d4e-1e62-4b53-ba3a-7aef3adff17d@f9941",
       "__expectedType__": "cc.SpriteFrame"
     },
     "_type": 1,
@@ -860,19 +860,19 @@
       "a": 255
     },
     "_normalSprite": {
-      "__uuid__": "20835ba4-6145-4fbc-a58a-051ce700aa3e@f9941",
+      "__uuid__": "b3194d4e-1e62-4b53-ba3a-7aef3adff17d@f9941",
       "__expectedType__": "cc.SpriteFrame"
     },
     "_hoverSprite": {
-      "__uuid__": "20835ba4-6145-4fbc-a58a-051ce700aa3e@f9941",
+      "__uuid__": "b3194d4e-1e62-4b53-ba3a-7aef3adff17d@f9941",
       "__expectedType__": "cc.SpriteFrame"
     },
     "_pressedSprite": {
-      "__uuid__": "544e49d6-3f05-4fa8-9a9e-091f98fc2ce8@f9941",
+      "__uuid__": "3c42069f-4c4a-45de-a63e-0e4135f45ade@f9941",
       "__expectedType__": "cc.SpriteFrame"
     },
     "_disabledSprite": {
-      "__uuid__": "951249e0-9f16-456d-8b85-a6ca954da16b@f9941",
+      "__uuid__": "1ab5a4e4-01f7-4f06-aa72-37a40dfcf4b4@f9941",
       "__expectedType__": "cc.SpriteFrame"
     },
     "_duration": 0.1,
@@ -923,7 +923,7 @@
     "_contentSize": {
       "__type__": "cc.Size",
       "width": 100,
-      "height": 60
+      "height": 90
     },
     "_anchorPoint": {
       "__type__": "cc.Vec2",

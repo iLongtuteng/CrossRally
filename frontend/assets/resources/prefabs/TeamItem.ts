@@ -1,5 +1,6 @@
 import { _decorator, Button, Component, Label, Toggle } from 'cc';
 import GameMsgs from '../../scripts/game/GameMsgs';
+import { audioManager } from '../../scripts/game/AudioManager';
 const { ccclass, property } = _decorator;
 
 export enum TeamItemType {
@@ -23,7 +24,7 @@ export class TeamItem extends Component {
 
     public init(type: TeamItemType, index: number): void {
         this._index = index;
-        this.nameLbl.string = '第' + (index + 1) + '队';
+        this.nameLbl.string = (index + 1) + '队';
         this.toggle.node.active = type == TeamItemType.CREATE ? true : false;
         this.toggle.isChecked = false;
         this.joinBtn.interactable = false;
@@ -40,6 +41,7 @@ export class TeamItem extends Component {
     }
 
     onJoinBtn() {
+        audioManager.playSound('Button');
         GameMsgs.send<number>(GameMsgs.Names.TeamJoinBtnClicked, this._index);
     }
 }

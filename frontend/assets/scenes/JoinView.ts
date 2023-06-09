@@ -1,4 +1,4 @@
-import { _decorator, Color, instantiate, Node, Prefab, Sprite, UITransform, Vec3 } from 'cc';
+import { _decorator, Button, instantiate, Node, Prefab, SpriteFrame, UITransform, Vec3 } from 'cc';
 import { gameManager } from '../scripts/game/GameManager';
 import { RaceItem } from '../resources/prefabs/RaceItem';
 import { TeamItem, TeamItemType } from '../resources/prefabs/TeamItem';
@@ -6,6 +6,8 @@ import { FWKMsg } from '../scripts/fwk/mvc/FWKMvc';
 import FWKComponent from '../scripts/fwk/FWKComponent';
 import { Warn } from '../resources/prefabs/Warn';
 import { RaceType } from '../scripts/shared/game/Models/Race';
+import { Start } from './Start';
+import { audioManager } from '../scripts/game/AudioManager';
 const { ccclass, property } = _decorator;
 
 @ccclass('JoinView')
@@ -37,8 +39,13 @@ export class JoinView extends FWKComponent {
     private _raceItemArr: Node[] = [];
     private _teamIdx: number = -1;
     private _teamItemArr: Node[] = [];
+    private _greenSprite: SpriteFrame = null;
+    private _blueSprite: SpriteFrame = null;
 
     onLoad() {
+        this._greenSprite = this.node.parent.getComponent(Start).greenSprite;
+        this._blueSprite = this.node.parent.getComponent(Start).blueSprite;
+
         let yOffset = 0;
         for (let i = 0; i < 5; i++) {
             let teamItem = instantiate(this.teamItemPrefab);
@@ -89,7 +96,7 @@ export class JoinView extends FWKComponent {
 
         let warn = instantiate(this.warnPrefab);
         warn.parent = this.node;
-        warn.getComponent(Warn).label.string = '创建者已离线，竞赛中止';
+        warn.getComponent(Warn).label.string = '创建者已离线\n竞赛中止';
 
         return true;
     }
@@ -98,9 +105,9 @@ export class JoinView extends FWKComponent {
         let index: number = msg.data;
         this._raceIdx = index;
         this._raceItemArr.forEach(element => {
-            element.getComponent(Sprite).color = new Color().fromHEX('#FFFFFF');
+            element.getComponent(RaceItem).bg.active = false;
         });
-        this._raceItemArr[index].getComponent(Sprite).color = new Color().fromHEX('#5ABDFF');
+        this._raceItemArr[index].getComponent(RaceItem).bg.active = true;
 
         this.teamChoose.active = true;
         this.applyTeamChoose((this._raceList[index] as RaceType).teamArr);
@@ -111,7 +118,8 @@ export class JoinView extends FWKComponent {
     private applyTeamChoose(teamArr: number[]): void {
         this._teamItemArr.forEach(element => {
             element.getComponent(TeamItem).joinBtn.interactable = false;
-            element.getComponent(TeamItem).joinBtn.getComponent(Sprite).color = new Color().fromHEX('#FFFFFF');
+            element.getComponent(TeamItem).joinBtn.getComponent(Button).normalSprite = this._greenSprite;
+            element.getComponent(TeamItem).joinBtn.getComponent(Button).hoverSprite = this._greenSprite;
             this._teamIdx = -1;
         });
 
@@ -124,14 +132,18 @@ export class JoinView extends FWKComponent {
         let index: number = msg.data;
         this._teamIdx = index;
         this._teamItemArr.forEach(element => {
-            element.getComponent(TeamItem).joinBtn.getComponent(Sprite).color = new Color().fromHEX('#FFFFFF');
+            element.getComponent(TeamItem).joinBtn.getComponent(Button).normalSprite = this._greenSprite;
+            element.getComponent(TeamItem).joinBtn.getComponent(Button).hoverSprite = this._greenSprite;
         });
-        this._teamItemArr[index].getComponent(TeamItem).joinBtn.getComponent(Sprite).color = new Color().fromHEX('#5ABDFF');
+        this._teamItemArr[index].getComponent(TeamItem).joinBtn.getComponent(Button).normalSprite = this._blueSprite;
+        this._teamItemArr[index].getComponent(TeamItem).joinBtn.getComponent(Button).hoverSprite = this._blueSprite;
 
         return true;
     }
 
     public onReadyBtn(): void {
+        audioManager.playSound('Button');
+
         if (this._raceIdx < 0) {
             let warn = instantiate(this.warnPrefab);
             warn.parent = this.node;
@@ -160,6 +172,7 @@ export class JoinView extends FWKComponent {
     }
 
     public onBackBtn(): void {
+        audioManager.playSound('Button');
         this.startView.active = true;
         this.node.active = false;
     }

@@ -5,6 +5,9 @@ const { ccclass, property } = _decorator;
 @ccclass('RaceItem')
 export class RaceItem extends Component {
 
+    @property(Node)
+    bg: Node;
+
     @property(Label)
     nameLbl: Label;
 

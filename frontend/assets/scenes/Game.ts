@@ -1,6 +1,7 @@
-import { _decorator, Color, director, EventKeyboard, Input, input, instantiate, KeyCode, Label, Node, Prefab, Sprite, UIOpacity, Vec3 } from 'cc';
+import { _decorator, director, EventKeyboard, Input, input, instantiate, KeyCode, Label, Node, Prefab, resources, Sprite, SpriteFrame, UIOpacity, Vec3 } from 'cc';
 import { gameManager } from '../scripts/game/GameManager';
 import { CameraCtrl } from './CameraCtrl';
+import { CameraBG } from './CameraBG';
 import { World } from './World';
 import { Ball } from '../resources/prefabs/Ball';
 import { FWKMsg } from '../scripts/fwk/mvc/FWKMvc';
@@ -8,6 +9,7 @@ import { GameSystemState, ResultType } from '../scripts/shared/game/GameSystem';
 import FWKComponent from '../scripts/fwk/FWKComponent';
 import { Battery } from '../resources/prefabs/Battery';
 import { Confirm } from '../resources/prefabs/Confirm';
+import { audioManager } from '../scripts/game/AudioManager';
 const { ccclass, property } = _decorator;
 
 @ccclass('Game')
@@ -18,6 +20,9 @@ export class Game extends FWKComponent {
 
     @property(Node)
     camera: Node;
+
+    @property(Node)
+    cameraBG: Node;
 
     @property(Node)
     world: Node;
@@ -71,10 +76,25 @@ export class Game extends FWKComponent {
             ball.position = new Vec3(0, 200 + 20 * i, 0);
 
             if (element == this._teamIdx) {
-                ball.getComponent(Sprite).color = new Color().fromHEX('#ADFF00');
+                resources.load('textures/SelfBall/spriteFrame', SpriteFrame, (err, res) => {
+                    if (err) {
+                        console.log(err);
+                    } else {
+                        ball.getComponent(Sprite).spriteFrame = res;
+                    }
+                });
                 this.camera.getComponent(CameraCtrl).ball = ball;
+                this.cameraBG.getComponent(CameraBG).ball = ball;
                 this.world.getComponent(World).ball = ball;
                 this._selfBall = ball;
+            } else {
+                resources.load('textures/OtherBall/spriteFrame', SpriteFrame, (err, res) => {
+                    if (err) {
+                        console.log(err);
+                    } else {
+                        ball.getComponent(Sprite).spriteFrame = res;
+                    }
+                });
             }
 
             this._ballMap.set(element, ball);
@@ -110,6 +130,8 @@ export class Game extends FWKComponent {
             type: 'PlayerHeart',
             heartState: this._heartState
         });
+
+        audioManager.playMusic();
     }
 
     onDestroy() {
@@ -211,11 +233,15 @@ export class Game extends FWKComponent {
                         this.result.active = true;
                         this.result.getChildByName('Label').getComponent(Label).string = '你们队赢了！';
                         this._isFinish = true;
+                        audioManager.stopMusic();
+                        audioManager.playSound('Win');
                     } else if (ball.result == ResultType.Lose) {
                         this._selfBall.getComponent(Ball).setState(0);
                         this.result.active = true;
                         this.result.getChildByName('Label').getComponent(Label).string = '你们队输了！';
                         this._isFinish = true;
+                        audioManager.stopMusic();
+                        audioManager.playSound('Lose');
                     }
                 } else { //如果不是自己的团队
                     //更新该小球位置
@@ -248,6 +274,9 @@ export class Game extends FWKComponent {
     }
 
     public onQuitBtn(): void {
+        audioManager.playSound('Button');
+        audioManager.stopMusic();
+
         gameManager.leaveRace(() => {
             this._endTraining();
             director.loadScene('Start');
@@ -267,6 +296,8 @@ export class Game extends FWKComponent {
     }
 
     public onEndBtn(): void {
+        audioManager.playSound('Button');
+
         let confirmStr = '确定要结束训练吗？';
         let confirm = instantiate(this.confirmPrefab);
         confirm.getComponent(Confirm).init(this, confirmStr);
@@ -274,6 +305,11 @@ export class Game extends FWKComponent {
     }
 
     public onYesBtn(): void {
-        this.onQuitBtn();
+        audioManager.stopMusic();
+
+        gameManager.leaveRace(() => {
+            this._endTraining();
+            director.loadScene('Start');
+        });
     }
 }

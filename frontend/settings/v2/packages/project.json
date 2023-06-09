@@ -16,6 +16,10 @@
     {
       "name": "canvas_10",
       "value": 1024
+    },
+    {
+      "name": "canvas_0",
+      "value": 1
     }
   ],
   "custom_joint_texture_layouts": [],

@@ -34,10 +34,10 @@ export class World extends Component {
 
     private generateHillPiece(xOffset: number, points: Vec2[]): void {
         if (xOffset >= 640 && xOffset < 640 + gameConfig.pixelStep) {
-            this.startNode.position = new Vec3(xOffset, points[1].y + 100, 0);
+            this.startNode.position = new Vec3(xOffset, points[1].y + 50, 0);
         }
         if (xOffset >= 640 + gameManager.winDis * gameConfig.disUnit && xOffset < 640 + gameConfig.pixelStep + gameManager.winDis * gameConfig.disUnit) {
-            this.finishNode.position = new Vec3(xOffset, points[1].y + 100, 0);
+            this.finishNode.position = new Vec3(xOffset, points[1].y + 50, 0);
         }
 
         let hills = this.hills;
@@ -50,13 +50,13 @@ export class World extends Component {
 
             let g = first.node.getComponent(Graphics);
             g.clear();
-            g.fillColor.fromHEX('#7B4C1E');
+            g.fillColor.fromHEX('#8C5F35');
             g.moveTo(points[0].x, points[0].y - 240);
             g.lineTo(points[1].x, points[1].y);
             g.lineTo(points[2].x, points[2].y);
             g.lineTo(points[3].x, points[3].y - 240);
             g.fill();
-            g.fillColor.fromHEX('#67401B');
+            g.fillColor.fromHEX('#824F1E');
             g.moveTo(points[0].x, points[1].y - 18);
             g.lineTo(points[1].x, points[1].y);
             g.lineTo(points[2].x, points[2].y);
@@ -85,13 +85,13 @@ export class World extends Component {
         collider.friction = 1;
 
         let g = node.addComponent(Graphics);
-        g.fillColor.fromHEX('#7B4C1E');
+        g.fillColor.fromHEX('#8C5F35');
         g.moveTo(points[0].x, points[0].y - 240);
         g.lineTo(points[1].x, points[1].y);
         g.lineTo(points[2].x, points[2].y);
         g.lineTo(points[3].x, points[3].y - 240);
         g.fill();
-        g.fillColor.fromHEX('#67401B');
+        g.fillColor.fromHEX('#824F1E');
         g.moveTo(points[0].x, points[1].y - 18);
         g.lineTo(points[1].x, points[1].y);
         g.lineTo(points[2].x, points[2].y);
