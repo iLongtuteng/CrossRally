@@ -53,7 +53,7 @@ export interface ServiceType {
 }
 
 export const serviceProto: ServiceProto<ServiceType> = {
-    "version": 11,
+    "version": 20,
     "services": [
         {
             "id": 11,
@@ -61,13 +61,13 @@ export const serviceProto: ServiceProto<ServiceType> = {
             "type": "msg"
         },
         {
-            "id": 2,
+            "id": 23,
             "name": "CreateRace",
             "type": "api",
             "conf": {}
         },
         {
-            "id": 3,
+            "id": 24,
             "name": "GetRaceList",
             "type": "api",
             "conf": {}
@@ -91,7 +91,7 @@ export const serviceProto: ServiceProto<ServiceType> = {
             "conf": {}
         },
         {
-            "id": 14,
+            "id": 25,
             "name": "ReadyRace",
             "type": "api",
             "conf": {}
@@ -103,7 +103,7 @@ export const serviceProto: ServiceProto<ServiceType> = {
             "conf": {}
         },
         {
-            "id": 9,
+            "id": 26,
             "name": "server/CreatorLeave",
             "type": "msg"
         },
@@ -113,12 +113,12 @@ export const serviceProto: ServiceProto<ServiceType> = {
             "type": "msg"
         },
         {
-            "id": 15,
+            "id": 27,
             "name": "server/NotifyReady",
             "type": "msg"
         },
         {
-            "id": 5,
+            "id": 28,
             "name": "server/RaceList",
             "type": "msg"
         }
@@ -254,14 +254,14 @@ export const serviceProto: ServiceProto<ServiceType> = {
             ],
             "properties": [
                 {
-                    "id": 3,
+                    "id": 0,
                     "name": "name",
                     "type": {
                         "type": "String"
                     }
                 },
                 {
-                    "id": 2,
+                    "id": 1,
                     "name": "teamArr",
                     "type": {
                         "type": "Array",
@@ -271,7 +271,7 @@ export const serviceProto: ServiceProto<ServiceType> = {
                     }
                 },
                 {
-                    "id": 5,
+                    "id": 2,
                     "name": "difficulty",
                     "type": {
                         "type": "Number"
@@ -295,7 +295,7 @@ export const serviceProto: ServiceProto<ServiceType> = {
             ],
             "properties": [
                 {
-                    "id": 1,
+                    "id": 0,
                     "name": "id",
                     "type": {
                         "type": "Number"
@@ -385,7 +385,7 @@ export const serviceProto: ServiceProto<ServiceType> = {
             ],
             "properties": [
                 {
-                    "id": 0,
+                    "id": 3,
                     "name": "raceId",
                     "type": {
                         "type": "Number"
@@ -697,14 +697,14 @@ export const serviceProto: ServiceProto<ServiceType> = {
             "type": "Interface",
             "properties": [
                 {
-                    "id": 2,
+                    "id": 0,
                     "name": "difficulty",
                     "type": {
                         "type": "Number"
                     }
                 },
                 {
-                    "id": 0,
+                    "id": 1,
                     "name": "hillArr",
                     "type": {
                         "type": "Array",
@@ -715,7 +715,7 @@ export const serviceProto: ServiceProto<ServiceType> = {
                     }
                 },
                 {
-                    "id": 1,
+                    "id": 2,
                     "name": "winDis",
                     "type": {
                         "type": "Number"
