@@ -3,14 +3,10 @@ import { FWKMsg } from "../fwk/mvc/FWKMvc";
 module GameMsgs {
 
     export enum Names {
-        TeamToggleChecked,
-        TeamToggleUnchecked,
-        TeamJoinBtnClicked,
-        RaceItemClicked,
-        RefreshRaceList,
-        CreatorLeave,
         ReadyEnterRace,
-        ApplySystemState
+        TeamBtnClicked,
+        ApplySystemState,
+        RaceShowResult
     }
 
     export function send<T>(name: GameMsgs.Names, args: T = null, queue: string = ""): FWKMsg<T> {

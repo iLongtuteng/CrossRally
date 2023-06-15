@@ -1,5 +1,5 @@
 export const gameConfig = {
-    maxMember: 10,
+    maxMember: 100,
     syncRate: 10,
     disUnit: 100, //胜利距离单位
     pixelStep: 10,
