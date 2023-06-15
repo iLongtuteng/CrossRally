@@ -34,9 +34,10 @@ export class GameSystem {
 
     private _winDis: number = 100;
 
-    constructor(winDis: number, teamMap: Map<number, number[]>) {
+    public init(winDis: number, teamMap: Map<number, number[]>): void {
         this._winDis = winDis;
 
+        this._state.balls = [];
         for (let entry of teamMap.entries()) {
             let players: PlayerState[] = [];
             for (let playerId of entry[1]) {
@@ -57,7 +58,7 @@ export class GameSystem {
     }
 
     // 应用输入，计算状态变更
-    applyInput(input: GameSystemInput) {
+    public applyInput(input: GameSystemInput): void {
         if (input.type === 'PlayerHeart') {
             for (let ball of this._state.balls) {
                 let player = ball.players.find(v => v.id === input.playerId);

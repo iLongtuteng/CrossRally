@@ -1,26 +1,20 @@
 import { ServiceProto } from 'tsrpc-proto';
 import { MsgClientInput } from './client/MsgClientInput';
-import { ReqCreateRace, ResCreateRace } from './PtlCreateRace';
-import { ReqGetRaceList, ResGetRaceList } from './PtlGetRaceList';
+import { ReqEndRace, ResEndRace } from './PtlEndRace';
 import { ReqJoinRace, ResJoinRace } from './PtlJoinRace';
 import { ReqLeaveRace, ResLeaveRace } from './PtlLeaveRace';
 import { ReqLogin, ResLogin } from './PtlLogin';
-import { ReqReadyRace, ResReadyRace } from './PtlReadyRace';
 import { ReqStartRace, ResStartRace } from './PtlStartRace';
-import { MsgCreatorLeave } from './server/MsgCreatorLeave';
+import { ReqUpdateTeams, ResUpdateTeams } from './PtlUpdateTeams';
 import { MsgFrame } from './server/MsgFrame';
-import { MsgNotifyReady } from './server/MsgNotifyReady';
-import { MsgRaceList } from './server/MsgRaceList';
+import { MsgRaceInfo } from './server/MsgRaceInfo';
+import { MsgRaceResult } from './server/MsgRaceResult';
 
 export interface ServiceType {
     api: {
-        "CreateRace": {
-            req: ReqCreateRace,
-            res: ResCreateRace
-        },
-        "GetRaceList": {
-            req: ReqGetRaceList,
-            res: ResGetRaceList
+        "EndRace": {
+            req: ReqEndRace,
+            res: ResEndRace
         },
         "JoinRace": {
             req: ReqJoinRace,
@@ -34,26 +28,25 @@ export interface ServiceType {
             req: ReqLogin,
             res: ResLogin
         },
-        "ReadyRace": {
-            req: ReqReadyRace,
-            res: ResReadyRace
-        },
         "StartRace": {
             req: ReqStartRace,
             res: ResStartRace
+        },
+        "UpdateTeams": {
+            req: ReqUpdateTeams,
+            res: ResUpdateTeams
         }
     },
     msg: {
         "client/ClientInput": MsgClientInput,
-        "server/CreatorLeave": MsgCreatorLeave,
         "server/Frame": MsgFrame,
-        "server/NotifyReady": MsgNotifyReady,
-        "server/RaceList": MsgRaceList
+        "server/RaceInfo": MsgRaceInfo,
+        "server/RaceResult": MsgRaceResult
     }
 }
 
 export const serviceProto: ServiceProto<ServiceType> = {
-    "version": 20,
+    "version": 19,
     "services": [
         {
             "id": 11,
@@ -61,14 +54,8 @@ export const serviceProto: ServiceProto<ServiceType> = {
             "type": "msg"
         },
         {
-            "id": 23,
-            "name": "CreateRace",
-            "type": "api",
-            "conf": {}
-        },
-        {
-            "id": 24,
-            "name": "GetRaceList",
+            "id": 21,
+            "name": "EndRace",
             "type": "api",
             "conf": {}
         },
@@ -91,21 +78,16 @@ export const serviceProto: ServiceProto<ServiceType> = {
             "conf": {}
         },
         {
-            "id": 25,
-            "name": "ReadyRace",
-            "type": "api",
-            "conf": {}
-        },
-        {
             "id": 16,
             "name": "StartRace",
             "type": "api",
             "conf": {}
         },
         {
-            "id": 26,
-            "name": "server/CreatorLeave",
-            "type": "msg"
+            "id": 18,
+            "name": "UpdateTeams",
+            "type": "api",
+            "conf": {}
         },
         {
             "id": 12,
@@ -113,13 +95,13 @@ export const serviceProto: ServiceProto<ServiceType> = {
             "type": "msg"
         },
         {
-            "id": 27,
-            "name": "server/NotifyReady",
+            "id": 20,
+            "name": "server/RaceInfo",
             "type": "msg"
         },
         {
-            "id": 28,
-            "name": "server/RaceList",
+            "id": 22,
+            "name": "server/RaceResult",
             "type": "msg"
         }
     ],
@@ -162,6 +144,19 @@ export const serviceProto: ServiceProto<ServiceType> = {
                         "target": {
                             "type": "Reference",
                             "target": "../game/GameSystem/BallMove"
+                        },
+                        "keys": [
+                            "playerId"
+                        ],
+                        "type": "Omit"
+                    }
+                },
+                {
+                    "id": 2,
+                    "type": {
+                        "target": {
+                            "type": "Reference",
+                            "target": "../game/GameSystem/PlayerLeave"
                         },
                         "keys": [
                             "playerId"
@@ -241,7 +236,27 @@ export const serviceProto: ServiceProto<ServiceType> = {
                 }
             ]
         },
-        "PtlCreateRace/ReqCreateRace": {
+        "../game/GameSystem/PlayerLeave": {
+            "type": "Interface",
+            "properties": [
+                {
+                    "id": 0,
+                    "name": "type",
+                    "type": {
+                        "type": "Literal",
+                        "literal": "PlayerLeave"
+                    }
+                },
+                {
+                    "id": 1,
+                    "name": "playerId",
+                    "type": {
+                        "type": "Number"
+                    }
+                }
+            ]
+        },
+        "PtlEndRace/ReqEndRace": {
             "type": "Interface",
             "extends": [
                 {
@@ -255,34 +270,18 @@ export const serviceProto: ServiceProto<ServiceType> = {
             "properties": [
                 {
                     "id": 0,
-                    "name": "name",
-                    "type": {
-                        "type": "String"
-                    }
-                },
-                {
-                    "id": 1,
-                    "name": "teamArr",
-                    "type": {
-                        "type": "Array",
-                        "elementType": {
-                            "type": "Number"
-                        }
-                    }
-                },
-                {
-                    "id": 2,
-                    "name": "difficulty",
+                    "name": "winnerIdx",
                     "type": {
                         "type": "Number"
-                    }
+                    },
+                    "optional": true
                 }
             ]
         },
         "base/BaseRequest": {
             "type": "Interface"
         },
-        "PtlCreateRace/ResCreateRace": {
+        "PtlEndRace/ResEndRace": {
             "type": "Interface",
             "extends": [
                 {
@@ -290,87 +289,12 @@ export const serviceProto: ServiceProto<ServiceType> = {
                     "type": {
                         "type": "Reference",
                         "target": "base/BaseResponse"
-                    }
-                }
-            ],
-            "properties": [
-                {
-                    "id": 0,
-                    "name": "id",
-                    "type": {
-                        "type": "Number"
                     }
                 }
             ]
         },
         "base/BaseResponse": {
             "type": "Interface"
-        },
-        "PtlGetRaceList/ReqGetRaceList": {
-            "type": "Interface",
-            "extends": [
-                {
-                    "id": 0,
-                    "type": {
-                        "type": "Reference",
-                        "target": "base/BaseRequest"
-                    }
-                }
-            ]
-        },
-        "PtlGetRaceList/ResGetRaceList": {
-            "type": "Interface",
-            "extends": [
-                {
-                    "id": 0,
-                    "type": {
-                        "type": "Reference",
-                        "target": "base/BaseResponse"
-                    }
-                }
-            ],
-            "properties": [
-                {
-                    "id": 0,
-                    "name": "list",
-                    "type": {
-                        "type": "Array",
-                        "elementType": {
-                            "type": "Reference",
-                            "target": "../game/Models/Race/RaceType"
-                        }
-                    }
-                }
-            ]
-        },
-        "../game/Models/Race/RaceType": {
-            "type": "Interface",
-            "properties": [
-                {
-                    "id": 0,
-                    "name": "id",
-                    "type": {
-                        "type": "Number"
-                    }
-                },
-                {
-                    "id": 1,
-                    "name": "name",
-                    "type": {
-                        "type": "String"
-                    }
-                },
-                {
-                    "id": 2,
-                    "name": "teamArr",
-                    "type": {
-                        "type": "Array",
-                        "elementType": {
-                            "type": "Number"
-                        }
-                    }
-                }
-            ]
         },
         "PtlJoinRace/ReqJoinRace": {
             "type": "Interface",
@@ -385,18 +309,12 @@ export const serviceProto: ServiceProto<ServiceType> = {
             ],
             "properties": [
                 {
-                    "id": 3,
-                    "name": "raceId",
-                    "type": {
-                        "type": "Number"
-                    }
-                },
-                {
                     "id": 2,
                     "name": "teamIdx",
                     "type": {
                         "type": "Number"
-                    }
+                    },
+                    "optional": true
                 }
             ]
         },
@@ -469,7 +387,7 @@ export const serviceProto: ServiceProto<ServiceType> = {
                 }
             ]
         },
-        "PtlReadyRace/ReqReadyRace": {
+        "PtlStartRace/ReqStartRace": {
             "type": "Interface",
             "extends": [
                 {
@@ -483,33 +401,9 @@ export const serviceProto: ServiceProto<ServiceType> = {
             "properties": [
                 {
                     "id": 0,
-                    "name": "raceId",
+                    "name": "difficulty",
                     "type": {
                         "type": "Number"
-                    }
-                }
-            ]
-        },
-        "PtlReadyRace/ResReadyRace": {
-            "type": "Interface",
-            "extends": [
-                {
-                    "id": 0,
-                    "type": {
-                        "type": "Reference",
-                        "target": "base/BaseResponse"
-                    }
-                }
-            ]
-        },
-        "PtlStartRace/ReqStartRace": {
-            "type": "Interface",
-            "extends": [
-                {
-                    "id": 0,
-                    "type": {
-                        "type": "Reference",
-                        "target": "base/BaseRequest"
                     }
                 }
             ]
@@ -524,48 +418,43 @@ export const serviceProto: ServiceProto<ServiceType> = {
                         "target": "base/BaseResponse"
                     }
                 }
+            ]
+        },
+        "PtlUpdateTeams/ReqUpdateTeams": {
+            "type": "Interface",
+            "extends": [
+                {
+                    "id": 0,
+                    "type": {
+                        "type": "Reference",
+                        "target": "base/BaseRequest"
+                    }
+                }
             ],
             "properties": [
                 {
                     "id": 0,
-                    "name": "data",
+                    "name": "teamArr",
                     "type": {
-                        "type": "Interface",
-                        "properties": [
-                            {
-                                "id": 0,
-                                "name": "teamArr",
-                                "type": {
-                                    "type": "Array",
-                                    "elementType": {
-                                        "type": "Number"
-                                    }
-                                }
-                            },
-                            {
-                                "id": 1,
-                                "name": "teamIdx",
-                                "type": {
-                                    "type": "Number"
-                                }
-                            },
-                            {
-                                "id": 2,
-                                "name": "memberArr",
-                                "type": {
-                                    "type": "Array",
-                                    "elementType": {
-                                        "type": "Number"
-                                    }
-                                }
-                            }
-                        ]
+                        "type": "Array",
+                        "elementType": {
+                            "type": "Number"
+                        }
                     }
                 }
             ]
         },
-        "server/MsgCreatorLeave/MsgCreatorLeave": {
-            "type": "Interface"
+        "PtlUpdateTeams/ResUpdateTeams": {
+            "type": "Interface",
+            "extends": [
+                {
+                    "id": 0,
+                    "type": {
+                        "type": "Reference",
+                        "target": "base/BaseResponse"
+                    }
+                }
+            ]
         },
         "server/MsgFrame/MsgFrame": {
             "type": "Interface",
@@ -693,7 +582,7 @@ export const serviceProto: ServiceProto<ServiceType> = {
                 }
             ]
         },
-        "server/MsgNotifyReady/MsgNotifyReady": {
+        "server/MsgRaceInfo/MsgRaceInfo": {
             "type": "Interface",
             "properties": [
                 {
@@ -705,25 +594,36 @@ export const serviceProto: ServiceProto<ServiceType> = {
                 },
                 {
                     "id": 1,
+                    "name": "winDis",
+                    "type": {
+                        "type": "Number"
+                    }
+                },
+                {
+                    "id": 2,
                     "name": "hillArr",
                     "type": {
                         "type": "Array",
                         "elementType": {
                             "type": "Reference",
-                            "target": "../game/Models/Race/Hill"
+                            "target": "../../game/Models/Race/Hill"
                         }
                     }
                 },
                 {
-                    "id": 2,
-                    "name": "winDis",
+                    "id": 4,
+                    "name": "teamObjArr",
                     "type": {
-                        "type": "Number"
+                        "type": "Array",
+                        "elementType": {
+                            "type": "Reference",
+                            "target": "../../game/Models/Race/TeamObj"
+                        }
                     }
                 }
             ]
         },
-        "../game/Models/Race/Hill": {
+        "../../game/Models/Race/Hill": {
             "type": "Interface",
             "properties": [
                 {
@@ -756,19 +656,38 @@ export const serviceProto: ServiceProto<ServiceType> = {
                 }
             ]
         },
-        "server/MsgRaceList/MsgRaceList": {
+        "../../game/Models/Race/TeamObj": {
             "type": "Interface",
             "properties": [
                 {
                     "id": 0,
-                    "name": "list",
+                    "name": "teamIdx",
+                    "type": {
+                        "type": "Number"
+                    }
+                },
+                {
+                    "id": 1,
+                    "name": "memberArr",
                     "type": {
                         "type": "Array",
                         "elementType": {
-                            "type": "Reference",
-                            "target": "../game/Models/Race/RaceType"
+                            "type": "Number"
                         }
                     }
+                }
+            ]
+        },
+        "server/MsgRaceResult/MsgRaceResult": {
+            "type": "Interface",
+            "properties": [
+                {
+                    "id": 0,
+                    "name": "winnerIdx",
+                    "type": {
+                        "type": "Number"
+                    },
+                    "optional": true
                 }
             ]
         }
