@@ -3,9 +3,8 @@ import { ReqStartRace, ResStartRace } from "../shared/protocols/PtlStartRace";
 import { gameManager } from "../game/GameManager";
 
 export default async function (call: ApiCallWs<ReqStartRace, ResStartRace>) {
-    let data = gameManager.startRace(call.conn);
+    gameManager.defaultRace.startRace(call.req);
 
     call.succ({
-        data: data
     })
 }

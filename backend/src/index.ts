@@ -17,7 +17,11 @@ export const server = new WsServer(serviceProto, {
 // 断开连接后退出竞赛
 server.flows.postDisconnectFlow.push(v => {
     let conn = v.conn as WsConnection<ServiceType>;
-    gameManager.leaveRace(conn);
+    gameManager.defaultRace.applyInput({
+        type: 'PlayerLeave',
+        playerId: conn.playerId!
+    })
+    gameManager.defaultRace.leaveRace(conn);
 
     return v;
 });
