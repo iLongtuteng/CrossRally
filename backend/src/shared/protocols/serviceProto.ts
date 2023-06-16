@@ -2,7 +2,6 @@ import { ServiceProto } from 'tsrpc-proto';
 import { MsgClientInput } from './client/MsgClientInput';
 import { ReqEndRace, ResEndRace } from './PtlEndRace';
 import { ReqJoinRace, ResJoinRace } from './PtlJoinRace';
-import { ReqLeaveRace, ResLeaveRace } from './PtlLeaveRace';
 import { ReqLogin, ResLogin } from './PtlLogin';
 import { ReqStartRace, ResStartRace } from './PtlStartRace';
 import { ReqUpdateTeams, ResUpdateTeams } from './PtlUpdateTeams';
@@ -19,10 +18,6 @@ export interface ServiceType {
         "JoinRace": {
             req: ReqJoinRace,
             res: ResJoinRace
-        },
-        "LeaveRace": {
-            req: ReqLeaveRace,
-            res: ResLeaveRace
         },
         "Login": {
             req: ReqLogin,
@@ -46,7 +41,7 @@ export interface ServiceType {
 }
 
 export const serviceProto: ServiceProto<ServiceType> = {
-    "version": 19,
+    "version": 20,
     "services": [
         {
             "id": 11,
@@ -62,12 +57,6 @@ export const serviceProto: ServiceProto<ServiceType> = {
         {
             "id": 4,
             "name": "JoinRace",
-            "type": "api",
-            "conf": {}
-        },
-        {
-            "id": 17,
-            "name": "LeaveRace",
             "type": "api",
             "conf": {}
         },
@@ -150,19 +139,6 @@ export const serviceProto: ServiceProto<ServiceType> = {
                         ],
                         "type": "Omit"
                     }
-                },
-                {
-                    "id": 2,
-                    "type": {
-                        "target": {
-                            "type": "Reference",
-                            "target": "../game/GameSystem/PlayerLeave"
-                        },
-                        "keys": [
-                            "playerId"
-                        ],
-                        "type": "Omit"
-                    }
                 }
             ]
         },
@@ -236,26 +212,6 @@ export const serviceProto: ServiceProto<ServiceType> = {
                 }
             ]
         },
-        "../game/GameSystem/PlayerLeave": {
-            "type": "Interface",
-            "properties": [
-                {
-                    "id": 0,
-                    "name": "type",
-                    "type": {
-                        "type": "Literal",
-                        "literal": "PlayerLeave"
-                    }
-                },
-                {
-                    "id": 1,
-                    "name": "playerId",
-                    "type": {
-                        "type": "Number"
-                    }
-                }
-            ]
-        },
         "PtlEndRace/ReqEndRace": {
             "type": "Interface",
             "extends": [
@@ -319,30 +275,6 @@ export const serviceProto: ServiceProto<ServiceType> = {
             ]
         },
         "PtlJoinRace/ResJoinRace": {
-            "type": "Interface",
-            "extends": [
-                {
-                    "id": 0,
-                    "type": {
-                        "type": "Reference",
-                        "target": "base/BaseResponse"
-                    }
-                }
-            ]
-        },
-        "PtlLeaveRace/ReqLeaveRace": {
-            "type": "Interface",
-            "extends": [
-                {
-                    "id": 0,
-                    "type": {
-                        "type": "Reference",
-                        "target": "base/BaseRequest"
-                    }
-                }
-            ]
-        },
-        "PtlLeaveRace/ResLeaveRace": {
             "type": "Interface",
             "extends": [
                 {

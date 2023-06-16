@@ -46,7 +46,6 @@ export class Race {
 
     public joinRace(req: ReqJoinRace, conn: WsConnection<ServiceType>): boolean {
         if (req.teamIdx === undefined) {
-            this._adviserConn = conn;
             this._conns.push(conn);
             conn.listenMsg('client/ClientInput', call => {
                 call.msg.inputs.forEach(v => {
@@ -101,7 +100,9 @@ export class Race {
         }
     }
 
-    public startRace(req: ReqStartRace): void {
+    public startRace(req: ReqStartRace, conn: WsConnection<ServiceType>): void {
+        this._adviserConn = conn;
+
         let winDis = 0;
         switch (req.difficulty) {
             case 0:
