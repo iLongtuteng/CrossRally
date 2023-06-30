@@ -36,7 +36,7 @@ export class Start extends FWKComponent {
 
     private _difficulty: number = 1;
 
-    onLoad() {
+    async onLoad() {
         resources.load('textures/BtnGreenNormal/spriteFrame', SpriteFrame, (err, res) => {
             if (err) {
                 console.log(err);
@@ -82,29 +82,27 @@ export class Start extends FWKComponent {
             }
 
             gameManager.initClient();
-            gameManager.connect(() => {
-                gameManager.login(() => {
-                    this.startBtn.interactable = true;
+            await gameManager.connect();
+            await gameManager.login();
+            this.startBtn.interactable = true;
 
-                    let teamArr = [];
-                    for (let i = 0; i < 2; i++) {
-                        teamArr.push(i);
-                    }
-                    gameManager.updateTeams(teamArr, () => {
-                        if (gameManager.isAdviser) {
-                            gameManager.joinRace();
-                        } else {
-                            let teamIdx = 0;
-                            // let teamIdx = 1;
-                            gameManager.joinRace(teamIdx, () => { }, (err) => {
-                                let warn = instantiate(this.warnPrefab);
-                                warn.parent = this.node;
-                                warn.getComponent(Warn).label.string = err;
-                            });
-                        }
-                    });
+            let teamArr = [];
+            for (let i = 0; i < 2; i++) {
+                teamArr.push(i);
+            }
+            await gameManager.updateTeams(teamArr);
+
+            if (gameManager.isAdviser) {
+                gameManager.joinRace();
+            } else {
+                let teamIdx = 0;
+                // let teamIdx = 1;
+                gameManager.joinRace(teamIdx, () => { }, (err) => {
+                    let warn = instantiate(this.warnPrefab);
+                    warn.parent = this.node;
+                    warn.getComponent(Warn).label.string = err;
                 });
-            });
+            }
 
             gameManager.delayTime = 2000;
         }
@@ -114,7 +112,7 @@ export class Start extends FWKComponent {
         window.removeEventListener('message', this._onMessage.bind(this));
     }
 
-    private _onMessage(e: MessageEvent): void {
+    private async _onMessage(e: MessageEvent): Promise<void> {
         let obj = JSON.parse(e.data);
 
         if (obj.type == 'is_ready') {
@@ -143,33 +141,31 @@ export class Start extends FWKComponent {
             if (obj.host != null) {
                 console.log('obj.host: ' + obj.host);
                 gameManager.initClient(obj.host);
-                gameManager.connect(() => {
-                    gameManager.login(() => {
-                        this.startBtn.interactable = true;
+                await gameManager.connect();
+                await gameManager.login();
+                this.startBtn.interactable = true;
 
-                        if (obj.teamLen != null) {
-                            console.log('obj.teamLen: ' + obj.teamLen);
-                            let teamArr = [];
-                            for (let i = 0; i < obj.teamLen; i++) {
-                                teamArr.push(i);
-                            }
-                            gameManager.updateTeams(teamArr, () => {
-                                if (gameManager.isAdviser) {
-                                    gameManager.joinRace();
-                                } else {
-                                    if (obj.teamIdx != null) {
-                                        console.log('obj.teamIdx: ' + obj.teamIdx);
-                                        gameManager.joinRace(obj.teamIdx, () => { }, (err) => {
-                                            let warn = instantiate(this.warnPrefab);
-                                            warn.parent = this.node;
-                                            warn.getComponent(Warn).label.string = err;
-                                        });
-                                    }
-                                }
+                if (obj.teamLen != null) {
+                    console.log('obj.teamLen: ' + obj.teamLen);
+                    let teamArr = [];
+                    for (let i = 0; i < obj.teamLen; i++) {
+                        teamArr.push(i);
+                    }
+                    await gameManager.updateTeams(teamArr);
+
+                    if (gameManager.isAdviser) {
+                        gameManager.joinRace();
+                    } else {
+                        if (obj.teamIdx != null) {
+                            console.log('obj.teamIdx: ' + obj.teamIdx);
+                            gameManager.joinRace(obj.teamIdx, () => { }, (err) => {
+                                let warn = instantiate(this.warnPrefab);
+                                warn.parent = this.node;
+                                warn.getComponent(Warn).label.string = err;
                             });
                         }
-                    });
-                });
+                    }
+                }
             }
 
             if (obj.delay != null) {

@@ -133,7 +133,7 @@
   },
   {
     "__type__": "cc.CompPrefabInfo",
-    "fileId": "0ckXm18Z1EqL2CR7DGLg9b"
+    "fileId": "e2Icy0uM5AjqciqCcFHxkp"
   },
   {
     "__type__": "cc.RigidBody2D",
@@ -166,7 +166,7 @@
   },
   {
     "__type__": "cc.CompPrefabInfo",
-    "fileId": "85W16iS3RKe4EVdva4+Wwe"
+    "fileId": "33Cha7YmpPAICyb8C6dIpV"
   },
   {
     "__type__": "cc.CircleCollider2D",
@@ -195,7 +195,7 @@
   },
   {
     "__type__": "cc.CompPrefabInfo",
-    "fileId": "a0Upa68v9NI5Oo7f7GH0Wk"
+    "fileId": "d8sSOC7rBBdajJy/Eyefk8"
   },
   {
     "__type__": "147a8+txftB87ad+JmiL+G8",
@@ -223,6 +223,7 @@
       "__id__": 0
     },
     "fileId": "61EK4q9GZBNrCbxw3OFigL",
-    "instance": null
+    "instance": null,
+    "targetOverrides": null
   }
 ]

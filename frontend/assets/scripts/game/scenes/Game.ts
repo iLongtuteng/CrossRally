@@ -11,6 +11,7 @@ import { Ball } from '../prefabs/Ball';
 import { Battery } from '../prefabs/Battery';
 import { Confirm } from '../prefabs/Confirm';
 import { Team } from '../prefabs/Team';
+import { Rank } from '../prefabs/Rank';
 const { ccclass, property } = _decorator;
 
 @ccclass('Game')
@@ -33,6 +34,12 @@ export class Game extends FWKComponent {
 
     @property(Node)
     balls: Node;
+
+    @property(Prefab)
+    rankPrefab: Prefab;
+
+    @property(Node)
+    ranks: Node;
 
     @property(Prefab)
     batteryPrefab: Prefab;
@@ -64,6 +71,8 @@ export class Game extends FWKComponent {
     private _memberArr: number[] = []; // 本人所属的团队成员playerId
     private _ballMap: Map<number, Node> = new Map<number, Node>();
     private _selfBall: Node = null;
+    private _rankMap: Map<number, Node> = new Map<number, Node>();
+    private _rankArr: any[] = [];
     private _teamNodeMap: Map<number, Node> = new Map<number, Node>();
     private _batteryMap: Map<number, Node> = new Map<number, Node>();
     private _heartState: number = 0;
@@ -137,6 +146,11 @@ export class Game extends FWKComponent {
             }
 
             this._ballMap.set(element, ball);
+
+            let rank = instantiate(this.rankPrefab);
+            rank.parent = this.ranks;
+            rank.getComponent(Rank).ball = ball;
+            this._rankMap.set(element, rank);
 
             if (gameManager.isAdviser) {
                 let team = instantiate(this.teamPrefab);
@@ -284,7 +298,7 @@ export class Game extends FWKComponent {
         this.camera.getComponent(CameraCtrl).ball = this._ballMap.get(key);
         this.cameraBG.getComponent(CameraBG).ball = this._ballMap.get(key);
         this.world.getComponent(World).ball = this._ballMap.get(key);
-        this.world.getComponent(World).updateHill();
+        this.world.getComponent(World).resetHill();
 
         this._choosenIdx = key;
         this._refreshBattery(key);
@@ -308,12 +322,15 @@ export class Game extends FWKComponent {
 
     public onMsg_ApplySystemState(msg: FWKMsg<GameSystemState>): boolean {
         let systemState: GameSystemState = msg.data;
+        this._rankArr = [];
 
         for (let entry of this._ballMap.entries()) {
             let ball = systemState.balls.find(v => v.idx === entry[0]);
             if (!ball) {
                 entry[1].removeFromParent();
                 this._ballMap.delete(entry[0]);
+                this._rankMap.get(entry[0]).removeFromParent();
+                this._rankMap.delete(entry[0]);
                 if (gameManager.isAdviser) {
                     this._teamNodeMap.get(entry[0]).getComponent(Team).teamBtn.interactable = false;
                 }
@@ -321,11 +338,7 @@ export class Game extends FWKComponent {
                 // console.log('ball.idx: ' + ball.idx);
                 // console.log('ball.maxSpeed: ' + ball.maxSpeed);
                 //应用每个小球的角速度
-                if (ball.result == ResultType.Pending) {
-                    entry[1].getComponent(Ball).setState(ball.maxSpeed);
-                } else {
-                    entry[1].getComponent(Ball).setState(0);
-                }
+                entry[1].getComponent(Ball).setState(ball.maxSpeed);
 
                 if (gameManager.isAdviser) {
                     if (entry[1]) {
@@ -373,6 +386,28 @@ export class Game extends FWKComponent {
                         }
                     }
                 }
+
+                this._rankArr.push({
+                    idx: ball.idx,
+                    dis: ball.pos.x
+                });
+            }
+        }
+
+        let temp = null;
+        for (let i = 0; i < this._rankArr.length - 1; i++) {
+            for (let j = 0; j < this._rankArr.length - i - 1; j++) {
+                if (this._rankArr[j].dis < this._rankArr[j + 1].dis) {
+                    temp = this._rankArr[j];
+                    this._rankArr[j] = this._rankArr[j + 1];
+                    this._rankArr[j + 1] = temp;
+                }
+            }
+        }
+
+        for (let i = 0; i < this._rankArr.length; i++) {
+            if (this._rankMap.has(this._rankArr[i].idx)) {
+                this._rankMap.get(this._rankArr[i].idx).getComponent(Rank).label.string = (i + 1).toString();
             }
         }
 
@@ -380,10 +415,11 @@ export class Game extends FWKComponent {
     }
 
     public onMsg_RaceShowResult(msg: FWKMsg<number>): boolean {
-        this.result.active = true;
+        for (let value of this._ballMap.values()) {
+            value.getComponent(Ball).setState(0);
+        }
         audioManager.stopMusic();
-        this._trainingTime = 0;
-        this._endTimer();
+        this.result.active = true;
 
         let winnerIdx: number = msg.data;
         if (winnerIdx != undefined && winnerIdx != null) {
@@ -409,6 +445,9 @@ export class Game extends FWKComponent {
         });
         window.parent.postMessage(messageStr, '*');
         console.log('end: ' + messageStr);
+
+        this._trainingTime = 0;
+        this._endTimer();
 
         return true;
     }

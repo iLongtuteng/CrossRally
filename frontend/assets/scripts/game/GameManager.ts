@@ -23,6 +23,7 @@ export class GameManager {
     private _client: BaseWsClient<ServiceType>;
     private _isInit: boolean = false;
     private _isLogin: boolean = false;
+    private _isStart: boolean = false;
 
     public initClient(host?: string): void {
         if (this._isInit) {
@@ -40,6 +41,9 @@ export class GameManager {
             }
         });
         this._client.listenMsg('server/RaceInfo', msg => {
+            if (this._isStart)
+                return;
+
             this.difficulty = msg.difficulty;
             this.winDis = msg.winDis;
             this.hillArr = msg.hillArr;
@@ -47,38 +51,40 @@ export class GameManager {
                 this.teamMap.set(teamObj.teamIdx, teamObj.memberArr);
             }
             GameMsgs.send<any>(GameMsgs.Names.ReadyEnterRace);
+
+            this._isStart = true;
         });
         this._client.listenMsg('server/Frame', msg => {
             GameMsgs.send<GameSystemState>(GameMsgs.Names.ApplySystemState, msg.state);
         });
         this._client.listenMsg('server/RaceResult', msg => {
+            if (!this._isStart)
+                return;
+
             GameMsgs.send<number>(GameMsgs.Names.RaceShowResult, msg.winnerIdx);
+
+            this._isStart = false;
         });
         this._isInit = true;
         console.log('客户端初始化成功，连接到：' + hostStr);
     }
 
-    public async connect(cb: Function): Promise<void> {
-        if (this._client.isConnected) {
-            cb && cb();
+    public async connect(): Promise<void> {
+        if (this._client.isConnected)
             return;
-        }
 
         let resConnect = await this._client.connect();
         if (!resConnect.isSucc) {
             await new Promise(rs => { setTimeout(rs, 2000) });
-            return this.connect(cb);
+            return this.connect();
         }
 
         console.log('连接成功');
-        cb && cb();
     }
 
-    public async login(cb: Function): Promise<void> {
-        if (this._isLogin) {
-            cb && cb();
+    public async login(): Promise<void> {
+        if (this._isLogin)
             return;
-        }
 
         let ret = await this._client.callApi('Login', {});
 
@@ -90,20 +96,16 @@ export class GameManager {
         this.selfPlayerId = ret.res.id;
         this._isLogin = true;
         console.log('登录成功, playerId: ' + ret.res.id);
-        cb && cb();
     }
 
-    public async updateTeams(teamArr: number[], cb: Function): Promise<void> {
+    public async updateTeams(teamArr: number[]): Promise<void> {
         let ret = await this._client.callApi('UpdateTeams', {
             teamArr: teamArr
         })
 
         if (!ret.isSucc) {
             console.log(ret.err.message);
-            return;
         }
-
-        cb && cb();
     }
 
     public async joinRace(teamIdx?: number, succCb?: Function, errCb?: Function): Promise<void> {
@@ -126,7 +128,6 @@ export class GameManager {
 
         if (!ret.isSucc) {
             console.log(ret.err.message);
-            return;
         }
     }
 
@@ -137,7 +138,6 @@ export class GameManager {
 
         if (!ret.isSucc) {
             console.log(ret.err.message);
-            return;
         }
     }
 
