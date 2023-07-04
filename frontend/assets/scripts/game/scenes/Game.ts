@@ -1,4 +1,4 @@
-import { _decorator, Button, EventKeyboard, Input, input, instantiate, KeyCode, Label, Node, Prefab, resources, Sprite, SpriteFrame, UIOpacity, Vec3 } from 'cc';
+import { _decorator, Button, EventKeyboard, Input, input, instantiate, KeyCode, Label, Node, Prefab, resources, Sprite, SpriteFrame, tween, UIOpacity, Vec3 } from 'cc';
 import { CameraCtrl } from './CameraCtrl';
 import { CameraBG } from './CameraBG';
 import { World } from './World';
@@ -11,7 +11,8 @@ import { Ball } from '../prefabs/Ball';
 import { Battery } from '../prefabs/Battery';
 import { Confirm } from '../prefabs/Confirm';
 import { Team } from '../prefabs/Team';
-import { Rank } from '../prefabs/Rank';
+import { TweenPool } from './TweenPool';
+import { gameConfig } from '../../shared/game/GameConfig';
 const { ccclass, property } = _decorator;
 
 @ccclass('Game')
@@ -78,6 +79,8 @@ export class Game extends FWKComponent {
     private _heartState: number = 0;
     private _isLeader: boolean = false;
     private _trainingTime: number = 0;
+    private _tweensMap: Map<number, TweenPool> = new Map<number, TweenPool>();
+    private _posMap: Map<number, Vec3> = new Map<number, Vec3>();
 
     async onLoad() {
         window.addEventListener('message', this._onMessage.bind(this));
@@ -111,6 +114,9 @@ export class Game extends FWKComponent {
             let ball = instantiate(this.ballPrefab);
             ball.parent = this.balls;
             ball.position = new Vec3(0, 200 + 20 * i, 0);
+
+            let rank = instantiate(this.rankPrefab);
+            rank.parent = this.ranks;
 
             if (gameManager.isAdviser) {
                 resources.load('textures/OtherBall/spriteFrame', SpriteFrame, (err, res) => {
@@ -146,11 +152,9 @@ export class Game extends FWKComponent {
             }
 
             this._ballMap.set(element, ball);
-
-            let rank = instantiate(this.rankPrefab);
-            rank.parent = this.ranks;
-            rank.getComponent(Rank).ball = ball;
             this._rankMap.set(element, rank);
+            this._tweensMap.set(element, new TweenPool());
+            this._posMap.set(element, new Vec3(0));
 
             if (gameManager.isAdviser) {
                 let team = instantiate(this.teamPrefab);
@@ -331,6 +335,8 @@ export class Game extends FWKComponent {
                 this._ballMap.delete(entry[0]);
                 this._rankMap.get(entry[0]).removeFromParent();
                 this._rankMap.delete(entry[0]);
+                this._tweensMap.delete(entry[0]);
+                this._posMap.delete(entry[0]);
                 if (gameManager.isAdviser) {
                     this._teamNodeMap.get(entry[0]).getComponent(Team).teamBtn.interactable = false;
                 }
@@ -341,9 +347,10 @@ export class Game extends FWKComponent {
                 entry[1].getComponent(Ball).setState(ball.maxSpeed);
 
                 if (gameManager.isAdviser) {
-                    if (entry[1]) {
-                        entry[1].position = new Vec3(ball.pos.x, ball.pos.y, 0);
-                    }
+                    // if (entry[1]) {
+                    //     entry[1].position = new Vec3(ball.pos.x, ball.pos.y, 0);
+                    // }
+                    this._tweenPos(entry[0], ball.pos);
 
                     if (ball.idx == this._choosenIdx) {
                         //应用团队成员的心脏状态
@@ -360,9 +367,10 @@ export class Game extends FWKComponent {
                 } else {
                     if (ball.idx == this._teamIdx) { //如果是自己的团队
                         if (!this._isLeader) { //如果自己不是队长，则更新该小球位置
-                            if (entry[1]) {
-                                entry[1].position = new Vec3(ball.pos.x, ball.pos.y, 0);
-                            }
+                            // if (entry[1]) {
+                            //     entry[1].position = new Vec3(ball.pos.x, ball.pos.y, 0);
+                            // }
+                            this._tweenPos(entry[0], ball.pos);
                         }
 
                         //应用团队成员的心脏状态
@@ -381,9 +389,10 @@ export class Game extends FWKComponent {
                         }
                     } else { //如果不是自己的团队
                         //更新该小球位置
-                        if (entry[1]) {
-                            entry[1].position = new Vec3(ball.pos.x, ball.pos.y, 0);
-                        }
+                        // if (entry[1]) {
+                        //     entry[1].position = new Vec3(ball.pos.x, ball.pos.y, 0);
+                        // }
+                        this._tweenPos(entry[0], ball.pos);
                     }
                 }
 
@@ -407,11 +416,32 @@ export class Game extends FWKComponent {
 
         for (let i = 0; i < this._rankArr.length; i++) {
             if (this._rankMap.has(this._rankArr[i].idx)) {
-                this._rankMap.get(this._rankArr[i].idx).getComponent(Rank).label.string = (i + 1).toString();
+                this._rankMap.get(this._rankArr[i].idx).getChildByName('Label').getComponent(Label).string = (i + 1).toString();
             }
         }
 
         return true;
+    }
+
+    private _tweenPos(idx: number, pos: any) {
+        let newPos = new Vec3(pos.x, pos.y, 0);
+        let targetPos = this._posMap.get(idx);
+        let tweens = this._tweensMap.get(idx);
+        let ball = this._ballMap.get(idx);
+        // let rank = this._rankMap.get(idx);
+        if (!targetPos.equals(newPos)) {
+            tweens.clear();
+            ball.setPosition(targetPos);
+            // rank.setPosition(targetPos);
+
+            targetPos.set(newPos);
+            tweens.add(tween(ball).to(1 / gameConfig.syncRate, {
+                position: targetPos
+            }).start());
+            // tweens.add(tween(rank).to(1 / gameConfig.syncRate, {
+            //     position: targetPos
+            // }).start());
+        }
     }
 
     public onMsg_RaceShowResult(msg: FWKMsg<number>): boolean {
@@ -463,6 +493,12 @@ export class Game extends FWKComponent {
                 }
             });
             // console.log('this._selfBall.position: ' + this._selfBall.position);
+        }
+
+        for (let entry of this._ballMap.entries()) {
+            if (this._rankMap.has(entry[0])) {
+                this._rankMap.get(entry[0]).position = entry[1].position;
+            }
         }
     }
 

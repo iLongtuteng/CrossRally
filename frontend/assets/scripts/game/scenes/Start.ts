@@ -174,6 +174,14 @@ export class Start extends FWKComponent {
             }
         }
 
+        if (obj.type == 'start_game') {
+            console.log('obj.type == "start_game"');
+            if (gameManager.isAdviser) {
+                gameManager.startRace(this._difficulty);
+                this.startBtn.interactable = false;
+            }
+        }
+
         if (obj.type == 'stop') {
             console.log('obj.type == "stop"');
             if (gameManager.isAdviser) {
