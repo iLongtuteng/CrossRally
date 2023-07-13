@@ -86,12 +86,6 @@ export class Start extends FWKComponent {
             await gameManager.login();
             this.startBtn.interactable = true;
 
-            let teamArr = [];
-            for (let i = 0; i < 2; i++) {
-                teamArr.push(i);
-            }
-            await gameManager.updateTeams(teamArr);
-
             if (gameManager.isAdviser) {
                 gameManager.joinRace();
             } else {
@@ -147,26 +141,17 @@ export class Start extends FWKComponent {
                 await gameManager.login();
                 this.startBtn.interactable = true;
 
-                if (obj.teamLen != null) {
-                    console.log('obj.teamLen: ' + obj.teamLen);
-                    let teamArr = [];
-                    for (let i = 0; i < obj.teamLen; i++) {
-                        teamArr.push(i);
-                    }
-                    await gameManager.updateTeams(teamArr);
-
-                    if (gameManager.isAdviser) {
-                        gameManager.joinRace();
-                    } else {
-                        if (obj.teamIdx != null && obj.patientName != null) {
-                            console.log('obj.teamIdx: ' + obj.teamIdx);
-                            console.log('obj.patientName: ' + obj.patientName);
-                            gameManager.joinRace(obj.teamIdx, obj.patientName, () => { }, (err) => {
-                                let warn = instantiate(this.warnPrefab);
-                                warn.parent = this.node;
-                                warn.getComponent(Warn).label.string = err;
-                            });
-                        }
+                if (gameManager.isAdviser) {
+                    gameManager.joinRace();
+                } else {
+                    if (obj.teamIdx != null && obj.patientName != null) {
+                        console.log('obj.teamIdx: ' + obj.teamIdx);
+                        console.log('obj.patientName: ' + obj.patientName);
+                        gameManager.joinRace(obj.teamIdx, obj.patientName, () => { }, (err) => {
+                            let warn = instantiate(this.warnPrefab);
+                            warn.parent = this.node;
+                            warn.getComponent(Warn).label.string = err;
+                        });
                     }
                 }
             }

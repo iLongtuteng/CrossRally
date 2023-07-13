@@ -3,7 +3,6 @@ import { gameConfig } from "../../shared/game/GameConfig";
 import { ServiceType } from "../../shared/protocols/serviceProto";
 import { GameSystem, GameSystemInput } from "../../shared/game/GameSystem";
 import { ReqJoinRace } from "../../shared/protocols/PtlJoinRace";
-import { ReqUpdateTeams } from "../../shared/protocols/PtlUpdateTeams";
 import { ReqStartRace } from "../../shared/protocols/PtlStartRace";
 import { server } from "../..";
 import { ReqEndRace } from "../../shared/protocols/PtlEndRace";
@@ -35,21 +34,6 @@ export class Race {
     private _pendingInputs: GameSystemInput[] = [];
     private _interval!: NodeJS.Timeout;
 
-    public updateTeams(req: ReqUpdateTeams): void {
-        for (let index of req.teamArr) {
-            if (!this._teamMap.has(index)) {
-                this._teamMap.set(index, []);
-            }
-        }
-
-        for (let key of this._teamMap.keys()) {
-            let index = req.teamArr.indexOf(key);
-            if (index < 0) {
-                this._teamMap.delete(key);
-            }
-        }
-    }
-
     public joinRace(req: ReqJoinRace, conn: WsConnection<ServiceType>): boolean {
         if (req.teamIdx === undefined) {
             this._conns.push(conn);
@@ -65,37 +49,43 @@ export class Race {
             return true;
         }
 
-        if (this._teamMap.has(req.teamIdx)) {
-            let index = this._teamMap.get(req.teamIdx)?.indexOf(conn.playerId!);
-            if (index !== undefined && index < 0 && this._teamMap.get(req.teamIdx)?.length! < gameConfig.maxMember) {
-                this._teamMap.get(req.teamIdx)?.push(conn.playerId!);
+        if (!this._teamMap.has(req.teamIdx)) {
+            this._teamMap.set(req.teamIdx, []);
+        }
 
-                if (req.patientName) {
-                    this._nameMap.set(conn.playerId!, req.patientName);
-                }
+        let index = this._teamMap.get(req.teamIdx)?.indexOf(conn.playerId!);
+        if (index !== undefined && index < 0 && this._teamMap.get(req.teamIdx)?.length! < gameConfig.maxMember) {
+            this._teamMap.get(req.teamIdx)?.push(conn.playerId!);
 
-                this._conns.push(conn);
-                conn.listenMsg('client/ClientInput', call => {
-                    call.msg.inputs.forEach(v => {
-                        this.applyInput({
-                            ...v,
-                            playerId: conn.playerId!
-                        });
+            if (req.patientName) {
+                this._nameMap.set(conn.playerId!, req.patientName);
+            }
+
+            this._conns.push(conn);
+            conn.listenMsg('client/ClientInput', call => {
+                call.msg.inputs.forEach(v => {
+                    this.applyInput({
+                        ...v,
+                        playerId: conn.playerId!
                     });
                 });
+            });
 
-                return true;
-            }
+            return true;
         }
 
         return false;
     }
 
     public leaveRace(conn: WsConnection<ServiceType>): void {
-        for (let value of this._teamMap.values()) {
-            let index = value.indexOf(conn.playerId!);
+        for (let entry of this._teamMap.entries()) {
+            let index = entry[1].indexOf(conn.playerId!);
             if (index >= 0) {
-                value.splice(index, 1);
+                entry[1].splice(index, 1);
+            }
+
+            if (!entry[1].length) {
+                this._teamMap.delete(entry[0]);
             }
         }
 

@@ -4,7 +4,6 @@ import { ReqEndRace, ResEndRace } from './PtlEndRace';
 import { ReqJoinRace, ResJoinRace } from './PtlJoinRace';
 import { ReqLogin, ResLogin } from './PtlLogin';
 import { ReqStartRace, ResStartRace } from './PtlStartRace';
-import { ReqUpdateTeams, ResUpdateTeams } from './PtlUpdateTeams';
 import { MsgFrame } from './server/MsgFrame';
 import { MsgRaceInfo } from './server/MsgRaceInfo';
 import { MsgRaceResult } from './server/MsgRaceResult';
@@ -26,10 +25,6 @@ export interface ServiceType {
         "StartRace": {
             req: ReqStartRace,
             res: ResStartRace
-        },
-        "UpdateTeams": {
-            req: ReqUpdateTeams,
-            res: ResUpdateTeams
         }
     },
     msg: {
@@ -69,12 +64,6 @@ export const serviceProto: ServiceProto<ServiceType> = {
         {
             "id": 16,
             "name": "StartRace",
-            "type": "api",
-            "conf": {}
-        },
-        {
-            "id": 18,
-            "name": "UpdateTeams",
             "type": "api",
             "conf": {}
         },
@@ -349,42 +338,6 @@ export const serviceProto: ServiceProto<ServiceType> = {
             ]
         },
         "PtlStartRace/ResStartRace": {
-            "type": "Interface",
-            "extends": [
-                {
-                    "id": 0,
-                    "type": {
-                        "type": "Reference",
-                        "target": "base/BaseResponse"
-                    }
-                }
-            ]
-        },
-        "PtlUpdateTeams/ReqUpdateTeams": {
-            "type": "Interface",
-            "extends": [
-                {
-                    "id": 0,
-                    "type": {
-                        "type": "Reference",
-                        "target": "base/BaseRequest"
-                    }
-                }
-            ],
-            "properties": [
-                {
-                    "id": 0,
-                    "name": "teamArr",
-                    "type": {
-                        "type": "Array",
-                        "elementType": {
-                            "type": "Number"
-                        }
-                    }
-                }
-            ]
-        },
-        "PtlUpdateTeams/ResUpdateTeams": {
             "type": "Interface",
             "extends": [
                 {

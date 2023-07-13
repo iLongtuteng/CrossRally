@@ -102,16 +102,6 @@ export class GameManager {
         console.log('登录成功, playerId: ' + ret.res.id);
     }
 
-    public async updateTeams(teamArr: number[]): Promise<void> {
-        let ret = await this._client.callApi('UpdateTeams', {
-            teamArr: teamArr
-        })
-
-        if (!ret.isSucc) {
-            console.log(ret.err.message);
-        }
-    }
-
     public async joinRace(teamIdx?: number, patientName?: string, succCb?: Function, errCb?: Function): Promise<void> {
         let ret = await this._client.callApi('JoinRace', {
             teamIdx: teamIdx,
