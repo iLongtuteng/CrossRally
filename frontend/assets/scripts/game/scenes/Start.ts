@@ -96,8 +96,10 @@ export class Start extends FWKComponent {
                 gameManager.joinRace();
             } else {
                 let teamIdx = 0;
+                let patientName = '张三';
                 // let teamIdx = 1;
-                gameManager.joinRace(teamIdx, () => { }, (err) => {
+                // let patientName = '李四';
+                gameManager.joinRace(teamIdx, patientName, () => { }, (err) => {
                     let warn = instantiate(this.warnPrefab);
                     warn.parent = this.node;
                     warn.getComponent(Warn).label.string = err;
@@ -156,9 +158,10 @@ export class Start extends FWKComponent {
                     if (gameManager.isAdviser) {
                         gameManager.joinRace();
                     } else {
-                        if (obj.teamIdx != null) {
+                        if (obj.teamIdx != null && obj.patientName != null) {
                             console.log('obj.teamIdx: ' + obj.teamIdx);
-                            gameManager.joinRace(obj.teamIdx, () => { }, (err) => {
+                            console.log('obj.patientName: ' + obj.patientName);
+                            gameManager.joinRace(obj.teamIdx, obj.patientName, () => { }, (err) => {
                                 let warn = instantiate(this.warnPrefab);
                                 warn.parent = this.node;
                                 warn.getComponent(Warn).label.string = err;

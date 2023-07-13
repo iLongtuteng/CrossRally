@@ -41,7 +41,7 @@ export interface ServiceType {
 }
 
 export const serviceProto: ServiceProto<ServiceType> = {
-    "version": 20,
+    "version": 21,
     "services": [
         {
             "id": 11,
@@ -269,6 +269,14 @@ export const serviceProto: ServiceProto<ServiceType> = {
                     "name": "teamIdx",
                     "type": {
                         "type": "Number"
+                    },
+                    "optional": true
+                },
+                {
+                    "id": 3,
+                    "name": "patientName",
+                    "type": {
+                        "type": "String"
                     },
                     "optional": true
                 }
@@ -552,6 +560,17 @@ export const serviceProto: ServiceProto<ServiceType> = {
                             "target": "../../game/Models/Race/TeamObj"
                         }
                     }
+                },
+                {
+                    "id": 5,
+                    "name": "nameObjArr",
+                    "type": {
+                        "type": "Array",
+                        "elementType": {
+                            "type": "Reference",
+                            "target": "../../game/Models/Race/NameObj"
+                        }
+                    }
                 }
             ]
         },
@@ -606,6 +625,25 @@ export const serviceProto: ServiceProto<ServiceType> = {
                         "elementType": {
                             "type": "Number"
                         }
+                    }
+                }
+            ]
+        },
+        "../../game/Models/Race/NameObj": {
+            "type": "Interface",
+            "properties": [
+                {
+                    "id": 0,
+                    "name": "playerId",
+                    "type": {
+                        "type": "Number"
+                    }
+                },
+                {
+                    "id": 1,
+                    "name": "patientName",
+                    "type": {
+                        "type": "String"
                     }
                 }
             ]

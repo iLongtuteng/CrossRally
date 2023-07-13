@@ -1,4 +1,4 @@
-import { _decorator, Component, Node, UIOpacity } from 'cc';
+import { _decorator, Component, Label, Node, UIOpacity } from 'cc';
 const { ccclass, property } = _decorator;
 
 @ccclass('Battery')
@@ -12,6 +12,9 @@ export class Battery extends Component {
 
     @property(Node)
     hs3: Node;
+
+    @property(Label)
+    label: Label;
 
     public setState(heartState: number): void {
         switch (heartState) {

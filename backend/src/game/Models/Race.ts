@@ -20,9 +20,15 @@ export interface TeamObj {
     memberArr: number[]
 }
 
+export interface NameObj {
+    playerId: number,
+    patientName: string
+}
+
 export class Race {
     // key：竞赛的团队索引；value：团队成员playerId数组
     private _teamMap: Map<number, number[]> = new Map<number, number[]>();
+    private _nameMap: Map<number, string> = new Map<number, string>();
     private _gameSystem: GameSystem = new GameSystem();
     private _conns: WsConnection<ServiceType>[] = [];
     private _adviserConn!: WsConnection<ServiceType>;
@@ -64,6 +70,10 @@ export class Race {
             if (index !== undefined && index < 0 && this._teamMap.get(req.teamIdx)?.length! < gameConfig.maxMember) {
                 this._teamMap.get(req.teamIdx)?.push(conn.playerId!);
 
+                if (req.patientName) {
+                    this._nameMap.set(conn.playerId!, req.patientName);
+                }
+
                 this._conns.push(conn);
                 conn.listenMsg('client/ClientInput', call => {
                     call.msg.inputs.forEach(v => {
@@ -87,6 +97,10 @@ export class Race {
             if (index >= 0) {
                 value.splice(index, 1);
             }
+        }
+
+        if (this._nameMap.has(conn.playerId!)) {
+            this._nameMap.delete(conn.playerId!);
         }
 
         let index = this._conns.indexOf(conn);
@@ -137,6 +151,15 @@ export class Race {
             }
         }
 
+        let nameObjArr: NameObj[] = [];
+        for (let entry of this._nameMap.entries()) {
+            let nameObj: NameObj = {
+                playerId: entry[0],
+                patientName: entry[1]
+            };
+            nameObjArr.push(nameObj);
+        }
+
         this._gameSystem.init(winDis, this._teamMap);
         this._pendingInputs = [];
         this._interval = setInterval(() => { this._sync() }, 1000 / gameConfig.syncRate);
@@ -145,7 +168,8 @@ export class Race {
             difficulty: req.difficulty,
             winDis: winDis,
             hillArr: hillArr,
-            teamObjArr: teamObjArr
+            teamObjArr: teamObjArr,
+            nameObjArr: nameObjArr
         }, this._conns);
     }
 

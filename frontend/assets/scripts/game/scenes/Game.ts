@@ -1,4 +1,4 @@
-import { _decorator, Button, EventKeyboard, Input, input, instantiate, KeyCode, Label, Node, Prefab, resources, Sprite, SpriteFrame, tween, UIOpacity, Vec3 } from 'cc';
+import { _decorator, Button, EventKeyboard, Input, input, instantiate, KeyCode, Label, Node, Prefab, resources, ScrollView, Sprite, SpriteFrame, tween, UIOpacity, UITransform, Vec3 } from 'cc';
 import { CameraCtrl } from './CameraCtrl';
 import { CameraBG } from './CameraBG';
 import { World } from './World';
@@ -41,6 +41,9 @@ export class Game extends FWKComponent {
 
     @property(Node)
     ranks: Node;
+
+    @property(ScrollView)
+    batteryView: ScrollView;
 
     @property(Prefab)
     batteryPrefab: Prefab;
@@ -175,21 +178,39 @@ export class Game extends FWKComponent {
                 }
             }
 
+            // for (let i = 0; i < 20; i++) {
+            //     batteryArr.push(i);
+            // }
+
             for (let i = 0; i < batteryArr.length; i++) {
                 const element = batteryArr[i];
                 let battery = instantiate(this.batteryPrefab);
                 battery.parent = this.batteries;
+                battery.getComponent(Battery).label.string = gameManager.nameMap.get(element);
+                // battery.getComponent(Battery).label.string = '张三三';
+
+                let posY = (batteryArr.length - 1 - i) * 40;
 
                 if (i == 0) {
-                    battery.position = new Vec3(0, (batteryArr.length - 1) * 50 + 6, 0);
+                    battery.position = new Vec3(0, posY, 0);
+                    battery.scale = new Vec3(0.8, 0.8, 1);
+                    if (posY + 44 >= 560) {
+                        this.batteries.getComponent(UITransform).height = posY + 44;
+                    }
                 } else {
-                    battery.position = new Vec3(30, (batteryArr.length - 1 - i) * 50, 0);
-                    battery.scale = new Vec3(0.75, 0.75, 1);
+                    battery.position = new Vec3(44, posY, 0);
+                    battery.scale = new Vec3(0.6, 0.6, 1);
                 }
 
                 this._batteryMap.set(element, battery);
             }
+
+            this.batteryView.scrollToTop();
+            // console.log('height: ' + this.batteries.getComponent(UITransform).height);
+            // console.log('position: ' + this.batteries.position);
         }
+
+        // this._refreshBattery(0);
 
         if (gameManager.isAdviser && this._teamNodeMap.has(this._teamArr[0])) {
             this.scheduleOnce(() => {
@@ -311,17 +332,36 @@ export class Game extends FWKComponent {
     }
 
     private _refreshBattery(key: number): void {
+        this.batteries.getComponent(UITransform).height = 559;
         this.batteries.removeAllChildren();
         this._batteryMap.clear();
 
+        // let batteryArr: number[] = [];
+        // for (let i = 0; i < 20; i++) {
+        //     batteryArr.push(i);
+        // }
+
+        // for (let i = 0; i < batteryArr.length; i++) {
+        //     const element = batteryArr[i];
         for (let i = 0; i < gameManager.teamMap.get(key).length; i++) {
             const element = gameManager.teamMap.get(key)[i];
             let battery = instantiate(this.batteryPrefab);
             battery.parent = this.batteries;
-            battery.position = new Vec3(30, (gameManager.teamMap.get(key).length - 1 - i) * 50, 0);
-            battery.scale = new Vec3(0.75, 0.75, 1);
+            battery.getComponent(Battery).label.string = gameManager.nameMap.get(element);
+            // battery.getComponent(Battery).label.string = '张三三';
+
+            let posY = (gameManager.teamMap.get(key).length - 1 - i) * 40;
+            // let posY = (batteryArr.length - 1 - i) * 40;
+
+            if (i == 0 && posY + 34 >= 560) {
+                this.batteries.getComponent(UITransform).height = posY + 34;
+            }
+            battery.position = new Vec3(44, posY, 0);
+            battery.scale = new Vec3(0.6, 0.6, 1);
             this._batteryMap.set(element, battery);
         }
+
+        this.batteryView.scrollToTop();
     }
 
     public onMsg_ApplySystemState(msg: FWKMsg<GameSystemState>): boolean {
