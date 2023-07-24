@@ -35,6 +35,8 @@ export class Start extends FWKComponent {
     warnPrefab: Prefab;
 
     private _difficulty: number = 1;
+    private _teamIdx: number = 0;
+    private _patientName: string = '';
 
     async onLoad() {
         resources.load('textures/BtnGreenNormal/spriteFrame', SpriteFrame, (err, res) => {
@@ -70,37 +72,67 @@ export class Start extends FWKComponent {
         this.startBtn.interactable = false;
 
         if (DEV) {
-            gameManager.isAdviser = true;
-            // gameManager.isAdviser = false;
+            setTimeout(async () => {
+                gameManager.isAdviser = true;
+                // gameManager.isAdviser = false;
 
-            if (gameManager.isAdviser) {
-                this.adviserView.active = true;
-                this.patientView.active = false;
-            } else {
-                this.adviserView.active = false;
-                this.patientView.active = true;
-            }
+                if (gameManager.isAdviser) {
+                    this.adviserView.active = true;
+                    this.patientView.active = false;
+                } else {
+                    this.adviserView.active = false;
+                    this.patientView.active = true;
+                }
 
-            gameManager.initClient();
-            await gameManager.connect();
-            await gameManager.login();
-            this.startBtn.interactable = true;
+                gameManager.initClient();
+                gameManager.postDisconnect(() => {
+                    this.startBtn.interactable = false;
+                    console.log('意外断线, 100毫秒后重连');
+                    setTimeout(async () => {
+                        await gameManager.connect();
+                        await gameManager.login();
+                        this.startBtn.interactable = true;
 
-            if (gameManager.isAdviser) {
-                gameManager.joinRace();
-            } else {
-                let teamIdx = 0;
-                let patientName = '张三';
-                // let teamIdx = 1;
-                // let patientName = '李四';
-                gameManager.joinRace(teamIdx, patientName, () => { }, (err) => {
-                    let warn = instantiate(this.warnPrefab);
-                    warn.parent = this.node;
-                    warn.getComponent(Warn).label.string = err;
+                        if (gameManager.isAdviser) {
+                            gameManager.joinRace();
+                        } else {
+                            gameManager.joinRace(this._teamIdx, this._patientName, () => { }, (err) => {
+                                let warn = instantiate(this.warnPrefab);
+                                warn.parent = this.node;
+                                warn.getComponent(Warn).label.string = err;
+                            });
+                        }
+
+                        // let res = await gameManager.connect();
+                        // 重连也错误，弹出错误提示
+                        // if(!res.isSucc){
+                        //     alert('网络错误，连接已断开');
+                        // }
+                    }, 100);
                 });
-            }
 
-            gameManager.delayTime = 2000;
+                await gameManager.connect();
+                await gameManager.login();
+                this.startBtn.interactable = true;
+
+                if (gameManager.isAdviser) {
+                    gameManager.joinRace();
+                } else {
+                    let teamIdx = 0;
+                    let patientName = '张三';
+                    // let teamIdx = 1;
+                    // let patientName = '李四';
+                    this._teamIdx = teamIdx;
+                    this._patientName = patientName;
+                    gameManager.joinRace(teamIdx, patientName, () => { }, (err) => {
+                        let warn = instantiate(this.warnPrefab);
+                        warn.parent = this.node;
+                        warn.getComponent(Warn).label.string = err;
+                    });
+                }
+
+                gameManager.delayTime = 2000;
+            }, 1000);
         }
     }
 
@@ -121,10 +153,6 @@ export class Start extends FWKComponent {
                 if (gameManager.isAdviser) {
                     this.adviserView.active = true;
                     this.patientView.active = false;
-
-                    this.scheduleOnce(() => {
-                        this._refreshDiff(this._difficulty);
-                    }, 0.2);
                 } else {
                     this.adviserView.active = false;
                     this.patientView.active = true;
@@ -137,6 +165,32 @@ export class Start extends FWKComponent {
             if (obj.host != null) {
                 console.log('obj.host: ' + obj.host);
                 gameManager.initClient(obj.host);
+                gameManager.postDisconnect(() => {
+                    this.startBtn.interactable = false;
+                    console.log('意外断线, 100毫秒后重连');
+                    setTimeout(async () => {
+                        await gameManager.connect();
+                        await gameManager.login();
+                        this.startBtn.interactable = true;
+
+                        if (gameManager.isAdviser) {
+                            gameManager.joinRace();
+                        } else {
+                            gameManager.joinRace(this._teamIdx, this._patientName, () => { }, (err) => {
+                                let warn = instantiate(this.warnPrefab);
+                                warn.parent = this.node;
+                                warn.getComponent(Warn).label.string = err;
+                            });
+                        }
+
+                        // let res = await gameManager.connect();
+                        // 重连也错误，弹出错误提示
+                        // if(!res.isSucc){
+                        //     alert('网络错误，连接已断开');
+                        // }
+                    }, 100);
+                });
+
                 await gameManager.connect();
                 await gameManager.login();
                 this.startBtn.interactable = true;
@@ -147,6 +201,8 @@ export class Start extends FWKComponent {
                     if (obj.teamIdx != null && obj.patientName != null) {
                         console.log('obj.teamIdx: ' + obj.teamIdx);
                         console.log('obj.patientName: ' + obj.patientName);
+                        this._teamIdx = obj.teamIdx;
+                        this._patientName = obj.patientName;
                         gameManager.joinRace(obj.teamIdx, obj.patientName, () => { }, (err) => {
                             let warn = instantiate(this.warnPrefab);
                             warn.parent = this.node;

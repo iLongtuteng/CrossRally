@@ -205,7 +205,7 @@ export class Race {
         while (xOffset < gameConfig.maxWidth) {
             tempYOffset = yOffset;
 
-            hillWidth = 120 + Math.ceil(Math.random() * 26) * 20;
+            hillWidth = 240 + Math.ceil(Math.random() * 20) * 20;
 
             // first step
             randomHeight = Math.min(Math.random() * hillWidth / 7.5, 600 - yOffset); // make sure yOffset < 600
@@ -231,7 +231,7 @@ export class Race {
 
         tempYOffset = yOffset;
 
-        hillWidth = 120 + Math.ceil(Math.random() * 26) * 20;
+        hillWidth = 240 + Math.ceil(Math.random() * 20) * 20;
 
         // first step
         randomHeight = Math.min(Math.random() * hillWidth / 7.5, 600 - yOffset); // make sure yOffset < 600
