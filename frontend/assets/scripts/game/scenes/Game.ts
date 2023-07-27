@@ -13,6 +13,7 @@ import { Confirm } from '../prefabs/Confirm';
 import { Team } from '../prefabs/Team';
 import { TweenPool } from './TweenPool';
 import { gameConfig } from '../../shared/game/GameConfig';
+import { Warn } from '../prefabs/Warn';
 const { ccclass, property } = _decorator;
 
 @ccclass('Game')
@@ -69,6 +70,9 @@ export class Game extends FWKComponent {
     @property(Button)
     endBtn: Button;
 
+    @property(Prefab)
+    warnPrefab: Prefab;
+
     private _teamArr: number[] = []; // 加入竞赛的全部团队索引
     private _teamIdx: number = -1; // 本人所属的团队索引
     private _choosenIdx: number = -1;
@@ -89,6 +93,28 @@ export class Game extends FWKComponent {
         window.addEventListener('message', this._onMessage.bind(this));
         input.on(Input.EventType.KEY_UP, this._onKeyUp, this);
         this._startTimer();
+
+        gameManager.postDisconnect(() => {
+            let warn = instantiate(this.warnPrefab);
+            warn.parent = this.node;
+            warn.getComponent(Warn).label.string = '断线重连';
+            console.log('意外断线, 100毫秒后重连');
+            setTimeout(async () => {
+                await gameManager.connect();
+
+                gameManager.joinRace(undefined, undefined, gameManager.selfPlayerId, () => { }, (err) => {
+                    let warn = instantiate(this.warnPrefab);
+                    warn.parent = this.node;
+                    warn.getComponent(Warn).label.string = err;
+                });
+
+                // let res = await gameManager.connect();
+                // 重连也错误，弹出错误提示
+                // if(!res.isSucc){
+                //     alert('网络错误，连接已断开');
+                // }
+            }, 100);
+        });
 
         if (gameManager.isAdviser) {
             this.endBtn.node.active = true;
@@ -485,6 +511,7 @@ export class Game extends FWKComponent {
     }
 
     public onMsg_RaceShowResult(msg: FWKMsg<number>): boolean {
+        gameManager.disconnect();
         for (let value of this._ballMap.values()) {
             value.getComponent(Ball).setState(0);
         }

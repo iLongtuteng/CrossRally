@@ -35,8 +35,6 @@ export class Start extends FWKComponent {
     warnPrefab: Prefab;
 
     private _difficulty: number = 1;
-    private _teamIdx: number = 0;
-    private _patientName: string = '';
 
     async onLoad() {
         resources.load('textures/BtnGreenNormal/spriteFrame', SpriteFrame, (err, res) => {
@@ -87,21 +85,19 @@ export class Start extends FWKComponent {
                 gameManager.initClient();
                 gameManager.postDisconnect(() => {
                     this.startBtn.interactable = false;
+                    let warn = instantiate(this.warnPrefab);
+                    warn.parent = this.node;
+                    warn.getComponent(Warn).label.string = '断线重连';
                     console.log('意外断线, 100毫秒后重连');
                     setTimeout(async () => {
                         await gameManager.connect();
-                        await gameManager.login();
                         this.startBtn.interactable = true;
 
-                        if (gameManager.isAdviser) {
-                            gameManager.joinRace();
-                        } else {
-                            gameManager.joinRace(this._teamIdx, this._patientName, () => { }, (err) => {
-                                let warn = instantiate(this.warnPrefab);
-                                warn.parent = this.node;
-                                warn.getComponent(Warn).label.string = err;
-                            });
-                        }
+                        gameManager.joinRace(undefined, undefined, gameManager.selfPlayerId, () => { }, (err) => {
+                            let warn = instantiate(this.warnPrefab);
+                            warn.parent = this.node;
+                            warn.getComponent(Warn).label.string = err;
+                        });
 
                         // let res = await gameManager.connect();
                         // 重连也错误，弹出错误提示
@@ -122,9 +118,7 @@ export class Start extends FWKComponent {
                     let patientName = '张三';
                     // let teamIdx = 1;
                     // let patientName = '李四';
-                    this._teamIdx = teamIdx;
-                    this._patientName = patientName;
-                    gameManager.joinRace(teamIdx, patientName, () => { }, (err) => {
+                    gameManager.joinRace(teamIdx, patientName, undefined, () => { }, (err) => {
                         let warn = instantiate(this.warnPrefab);
                         warn.parent = this.node;
                         warn.getComponent(Warn).label.string = err;
@@ -167,21 +161,19 @@ export class Start extends FWKComponent {
                 gameManager.initClient(obj.host);
                 gameManager.postDisconnect(() => {
                     this.startBtn.interactable = false;
+                    let warn = instantiate(this.warnPrefab);
+                    warn.parent = this.node;
+                    warn.getComponent(Warn).label.string = '断线重连';
                     console.log('意外断线, 100毫秒后重连');
                     setTimeout(async () => {
                         await gameManager.connect();
-                        await gameManager.login();
                         this.startBtn.interactable = true;
 
-                        if (gameManager.isAdviser) {
-                            gameManager.joinRace();
-                        } else {
-                            gameManager.joinRace(this._teamIdx, this._patientName, () => { }, (err) => {
-                                let warn = instantiate(this.warnPrefab);
-                                warn.parent = this.node;
-                                warn.getComponent(Warn).label.string = err;
-                            });
-                        }
+                        gameManager.joinRace(undefined, undefined, gameManager.selfPlayerId, () => { }, (err) => {
+                            let warn = instantiate(this.warnPrefab);
+                            warn.parent = this.node;
+                            warn.getComponent(Warn).label.string = err;
+                        });
 
                         // let res = await gameManager.connect();
                         // 重连也错误，弹出错误提示
@@ -201,9 +193,7 @@ export class Start extends FWKComponent {
                     if (obj.teamIdx != null && obj.patientName != null) {
                         console.log('obj.teamIdx: ' + obj.teamIdx);
                         console.log('obj.patientName: ' + obj.patientName);
-                        this._teamIdx = obj.teamIdx;
-                        this._patientName = obj.patientName;
-                        gameManager.joinRace(obj.teamIdx, obj.patientName, () => { }, (err) => {
+                        gameManager.joinRace(obj.teamIdx, obj.patientName, undefined, () => { }, (err) => {
                             let warn = instantiate(this.warnPrefab);
                             warn.parent = this.node;
                             warn.getComponent(Warn).label.string = err;

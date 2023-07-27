@@ -35,6 +35,28 @@ export class Race {
     private _interval!: NodeJS.Timeout;
 
     public joinRace(req: ReqJoinRace, conn: WsConnection<ServiceType>): boolean {
+        if (req.playerId !== undefined) {
+            for (let item of this._conns) {
+                if (item.playerId == req.playerId) {
+                    item.unlistenMsgAll('client/ClientInput');
+                    let index = this._conns.indexOf(item);
+                    this._conns.splice(index, 1);
+
+                    this._conns.push(conn);
+                    conn.listenMsg('client/ClientInput', call => {
+                        call.msg.inputs.forEach(v => {
+                            this.applyInput({
+                                ...v,
+                                playerId: conn.playerId!
+                            });
+                        });
+                    });
+                }
+            }
+
+            return true;
+        }
+
         if (req.teamIdx === undefined) {
             this._conns.push(conn);
             conn.listenMsg('client/ClientInput', call => {
@@ -95,9 +117,9 @@ export class Race {
 
         let index = this._conns.indexOf(conn);
         if (index >= 0) {
-            if (conn == this._adviserConn) {
-                this.endRace();
-            }
+            // if (conn == this._adviserConn) {
+            //     this.endRace();
+            // }
 
             conn.unlistenMsgAll('client/ClientInput');
             this._conns.splice(index, 1);
@@ -169,6 +191,10 @@ export class Race {
         server.broadcastMsg('server/RaceResult', {
             winnerIdx: req ? req.winnerIdx : undefined
         }, this._conns);
+
+        for (let conn of this._conns) {
+            this.leaveRace(conn);
+        }
     }
 
     public applyInput(input: GameSystemInput): void {

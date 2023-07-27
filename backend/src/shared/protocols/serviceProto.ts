@@ -36,7 +36,7 @@ export interface ServiceType {
 }
 
 export const serviceProto: ServiceProto<ServiceType> = {
-    "version": 21,
+    "version": 22,
     "services": [
         {
             "id": 11,
@@ -266,6 +266,14 @@ export const serviceProto: ServiceProto<ServiceType> = {
                     "name": "patientName",
                     "type": {
                         "type": "String"
+                    },
+                    "optional": true
+                },
+                {
+                    "id": 4,
+                    "name": "playerId",
+                    "type": {
+                        "type": "Number"
                     },
                     "optional": true
                 }
