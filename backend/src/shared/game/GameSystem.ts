@@ -11,7 +11,9 @@ export interface BallState {
     maxSpeed: number,
     pos: { x: number, y: number },
     players: PlayerState[],
-    result: ResultType
+    result: ResultType,
+    stateCount: number,
+    isConn: boolean
 }
 
 export interface PlayerState {
@@ -52,7 +54,9 @@ export class GameSystem {
                 maxSpeed: 0,
                 pos: { x: 0, y: 0 },
                 players: players,
-                result: ResultType.Pending
+                result: ResultType.Pending,
+                stateCount: 0,
+                isConn: true
             })
         }
     }
@@ -78,6 +82,7 @@ export class GameSystem {
                 let player = ball.players.find(v => v.id === input.playerId);
                 if (player) {
                     ball.pos = input.pos;
+                    ball.stateCount = 0;
 
                     if (ball.result == ResultType.Pending && ball.pos.x >= this._winDis * gameConfig.disUnit) {
                         for (let ball of this._state.balls) {
@@ -85,22 +90,6 @@ export class GameSystem {
                         }
                         ball.result = ResultType.Win;
                     }
-                }
-            }
-        } else if (input.type === 'PlayerLeave') {
-            for (let i = this._state.balls.length - 1; i >= 0; i--) {
-                let ball = this._state.balls[i];
-                ball.players.remove(v => v.id === input.playerId);
-
-                let total = 0;
-                for (let player of ball.players) {
-                    total += (player.heartState + 1);
-                }
-
-                ball.maxSpeed = Math.pow(total / ball.players.length, 4.3923) - 1;
-
-                if (!ball.players.length) {
-                    this._state.balls.splice(i, 1);
                 }
             }
         }
@@ -119,11 +108,5 @@ export interface BallMove {
     pos: { x: number, y: number }
 }
 
-export interface PlayerLeave {
-    type: 'PlayerLeave',
-    playerId: number
-}
-
 export type GameSystemInput = PlayerHeart
-    | BallMove
-    | PlayerLeave;
+    | BallMove;

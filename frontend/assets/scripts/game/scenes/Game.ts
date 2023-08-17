@@ -1,4 +1,4 @@
-import { _decorator, Button, EventKeyboard, Input, input, instantiate, KeyCode, Label, Node, Prefab, resources, ScrollView, Sprite, SpriteFrame, tween, UIOpacity, UITransform, Vec3 } from 'cc';
+import { _decorator, Button, EventKeyboard, Input, input, instantiate, KeyCode, Label, Node, Prefab, resources, RigidBody2D, ScrollView, Sprite, SpriteFrame, tween, UIOpacity, UITransform, Vec3 } from 'cc';
 import { CameraCtrl } from './CameraCtrl';
 import { CameraBG } from './CameraBG';
 import { World } from './World';
@@ -102,7 +102,7 @@ export class Game extends FWKComponent {
             setTimeout(async () => {
                 await gameManager.connect();
 
-                gameManager.joinRace(undefined, undefined, gameManager.selfPlayerId, () => { }, (err) => {
+                gameManager.joinRace(gameManager.isAdviser, gameManager.selfPlayerId, undefined, undefined, () => { }, (err) => {
                     let warn = instantiate(this.warnPrefab);
                     warn.parent = this.node;
                     warn.getComponent(Warn).label.string = err;
@@ -138,11 +138,23 @@ export class Game extends FWKComponent {
             }
         }
 
+        let temp = null;
+        for (let i = 0; i < this._teamArr.length - 1; i++) {
+            for (let j = 0; j < this._teamArr.length - i - 1; j++) {
+                if (this._teamArr[j] > this._teamArr[j + 1]) {
+                    temp = this._teamArr[j];
+                    this._teamArr[j] = this._teamArr[j + 1];
+                    this._teamArr[j + 1] = temp;
+                }
+            }
+        }
+
         for (let i = 0; i < this._teamArr.length; i++) {
             const element = this._teamArr[i];
             let ball = instantiate(this.ballPrefab);
             ball.parent = this.balls;
             ball.position = new Vec3(0, 200 + 20 * i, 0);
+            ball.getComponent(Ball).label.string = (element + 1).toString();
 
             let rank = instantiate(this.rankPrefab);
             rank.parent = this.ranks;
@@ -251,6 +263,10 @@ export class Game extends FWKComponent {
         });
 
         audioManager.playMusic();
+
+        if (gameManager.isAdviser) {
+            gameManager.enterRace();
+        }
     }
 
     onDestroy() {
@@ -403,20 +419,30 @@ export class Game extends FWKComponent {
                 this._rankMap.delete(entry[0]);
                 this._tweensMap.delete(entry[0]);
                 this._posMap.delete(entry[0]);
-                if (gameManager.isAdviser) {
+                if (gameManager.isAdviser && this._teamNodeMap.has(entry[0])) {
                     this._teamNodeMap.get(entry[0]).getComponent(Team).teamBtn.interactable = false;
                 }
             } else {
                 // console.log('ball.idx: ' + ball.idx);
                 // console.log('ball.maxSpeed: ' + ball.maxSpeed);
                 //应用每个小球的角速度
-                entry[1].getComponent(Ball).setState(ball.maxSpeed);
+                if (ball.isConn) {
+                    entry[1].getComponent(Ball).setState(ball.maxSpeed);
+                } else {
+                    entry[1].getComponent(Ball).setState(0);
+                    entry[1].getComponent(Ball).getComponent(RigidBody2D).sleep();
+                    if (gameManager.isAdviser && this._teamNodeMap.has(entry[0])) {
+                        this._teamNodeMap.get(entry[0]).getComponent(Team).teamBtn.interactable = false;
+                    }
+                }
 
                 if (gameManager.isAdviser) {
                     // if (entry[1]) {
                     //     entry[1].position = new Vec3(ball.pos.x, ball.pos.y, 0);
                     // }
-                    this._tweenPos(entry[0], ball.pos);
+                    if (ball.isConn) {
+                        this._tweenPos(entry[0], ball.pos);
+                    }
 
                     if (ball.idx == this._choosenIdx) {
                         //应用团队成员的心脏状态
@@ -432,11 +458,21 @@ export class Game extends FWKComponent {
                     }
                 } else {
                     if (ball.idx == this._teamIdx) { //如果是自己的团队
-                        if (!this._isLeader) { //如果自己不是队长，则更新该小球位置
+                        if (this._isLeader) { //如果自己是队长，则发送位置
+                            gameManager.sendClientInput({
+                                type: 'BallMove',
+                                pos: {
+                                    x: this._selfBall.position.x,
+                                    y: this._selfBall.position.y,
+                                }
+                            });
+                        } else { //如果自己不是队长，则更新该小球位置
                             // if (entry[1]) {
                             //     entry[1].position = new Vec3(ball.pos.x, ball.pos.y, 0);
                             // }
-                            this._tweenPos(entry[0], ball.pos);
+                            if (ball.isConn) {
+                                this._tweenPos(entry[0], ball.pos);
+                            }
                         }
 
                         //应用团队成员的心脏状态
@@ -450,7 +486,7 @@ export class Game extends FWKComponent {
                             }
                         }
 
-                        if (ball.result == ResultType.Win) {
+                        if (this._isLeader && ball.result == ResultType.Win) {
                             gameManager.endRace(this._teamIdx);
                         }
                     } else { //如果不是自己的团队
@@ -458,7 +494,9 @@ export class Game extends FWKComponent {
                         // if (entry[1]) {
                         //     entry[1].position = new Vec3(ball.pos.x, ball.pos.y, 0);
                         // }
-                        this._tweenPos(entry[0], ball.pos);
+                        if (ball.isConn) {
+                            this._tweenPos(entry[0], ball.pos);
+                        }
                     }
                 }
 
@@ -481,8 +519,27 @@ export class Game extends FWKComponent {
         }
 
         for (let i = 0; i < this._rankArr.length; i++) {
+            let fix = '';
+            switch (i) {
+                case 0:
+                    fix = 'st';
+                    break;
+
+                case 1:
+                    fix = 'nd';
+                    break;
+
+                case 2:
+                    fix = 'rd';
+                    break;
+
+                default:
+                    fix = 'th';
+                    break;
+            }
+
             if (this._rankMap.has(this._rankArr[i].idx)) {
-                this._rankMap.get(this._rankArr[i].idx).getChildByName('Label').getComponent(Label).string = (i + 1).toString();
+                this._rankMap.get(this._rankArr[i].idx).getChildByName('Label').getComponent(Label).string = (i + 1).toString() + fix;
             }
         }
 
@@ -507,11 +564,13 @@ export class Game extends FWKComponent {
             // tweens.add(tween(rank).to(1 / gameConfig.syncRate, {
             //     position: targetPos
             // }).start());
+        } else {
+            ball.setPosition(newPos);
         }
     }
 
     public onMsg_RaceShowResult(msg: FWKMsg<number>): boolean {
-        gameManager.disconnect();
+        console.log('onMsg_RaceShowResult');
         for (let value of this._ballMap.values()) {
             value.getComponent(Ball).setState(0);
         }
@@ -551,16 +610,16 @@ export class Game extends FWKComponent {
 
     update(deltaTime: number) {
         //如果自己是队长，则发送位置
-        if (this._isLeader) {
-            gameManager.sendClientInput({
-                type: 'BallMove',
-                pos: {
-                    x: this._selfBall.position.x,
-                    y: this._selfBall.position.y,
-                }
-            });
-            // console.log('this._selfBall.position: ' + this._selfBall.position);
-        }
+        // if (this._isLeader) {
+        //     gameManager.sendClientInput({
+        //         type: 'BallMove',
+        //         pos: {
+        //             x: this._selfBall.position.x,
+        //             y: this._selfBall.position.y,
+        //         }
+        //     });
+        //     console.log('this._selfBall.position: ' + this._selfBall.position);
+        // }
 
         for (let entry of this._ballMap.entries()) {
             if (this._rankMap.has(entry[0])) {

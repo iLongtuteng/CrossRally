@@ -1,8 +1,8 @@
 import { ServiceProto } from 'tsrpc-proto';
 import { MsgClientInput } from './client/MsgClientInput';
 import { ReqEndRace, ResEndRace } from './PtlEndRace';
+import { ReqEnterRace, ResEnterRace } from './PtlEnterRace';
 import { ReqJoinRace, ResJoinRace } from './PtlJoinRace';
-import { ReqLogin, ResLogin } from './PtlLogin';
 import { ReqStartRace, ResStartRace } from './PtlStartRace';
 import { MsgFrame } from './server/MsgFrame';
 import { MsgRaceInfo } from './server/MsgRaceInfo';
@@ -14,13 +14,13 @@ export interface ServiceType {
             req: ReqEndRace,
             res: ResEndRace
         },
+        "EnterRace": {
+            req: ReqEnterRace,
+            res: ResEnterRace
+        },
         "JoinRace": {
             req: ReqJoinRace,
             res: ResJoinRace
-        },
-        "Login": {
-            req: ReqLogin,
-            res: ResLogin
         },
         "StartRace": {
             req: ReqStartRace,
@@ -36,7 +36,7 @@ export interface ServiceType {
 }
 
 export const serviceProto: ServiceProto<ServiceType> = {
-    "version": 22,
+    "version": 24,
     "services": [
         {
             "id": 11,
@@ -50,14 +50,14 @@ export const serviceProto: ServiceProto<ServiceType> = {
             "conf": {}
         },
         {
-            "id": 4,
-            "name": "JoinRace",
+            "id": 23,
+            "name": "EnterRace",
             "type": "api",
             "conf": {}
         },
         {
-            "id": 7,
-            "name": "Login",
+            "id": 4,
+            "name": "JoinRace",
             "type": "api",
             "conf": {}
         },
@@ -241,6 +241,30 @@ export const serviceProto: ServiceProto<ServiceType> = {
         "base/BaseResponse": {
             "type": "Interface"
         },
+        "PtlEnterRace/ReqEnterRace": {
+            "type": "Interface",
+            "extends": [
+                {
+                    "id": 0,
+                    "type": {
+                        "type": "Reference",
+                        "target": "base/BaseRequest"
+                    }
+                }
+            ]
+        },
+        "PtlEnterRace/ResEnterRace": {
+            "type": "Interface",
+            "extends": [
+                {
+                    "id": 0,
+                    "type": {
+                        "type": "Reference",
+                        "target": "base/BaseResponse"
+                    }
+                }
+            ]
+        },
         "PtlJoinRace/ReqJoinRace": {
             "type": "Interface",
             "extends": [
@@ -253,6 +277,20 @@ export const serviceProto: ServiceProto<ServiceType> = {
                 }
             ],
             "properties": [
+                {
+                    "id": 5,
+                    "name": "isAdviser",
+                    "type": {
+                        "type": "Boolean"
+                    }
+                },
+                {
+                    "id": 4,
+                    "name": "playerId",
+                    "type": {
+                        "type": "Number"
+                    }
+                },
                 {
                     "id": 2,
                     "name": "teamIdx",
@@ -268,14 +306,6 @@ export const serviceProto: ServiceProto<ServiceType> = {
                         "type": "String"
                     },
                     "optional": true
-                },
-                {
-                    "id": 4,
-                    "name": "playerId",
-                    "type": {
-                        "type": "Number"
-                    },
-                    "optional": true
                 }
             ]
         },
@@ -287,39 +317,6 @@ export const serviceProto: ServiceProto<ServiceType> = {
                     "type": {
                         "type": "Reference",
                         "target": "base/BaseResponse"
-                    }
-                }
-            ]
-        },
-        "PtlLogin/ReqLogin": {
-            "type": "Interface",
-            "extends": [
-                {
-                    "id": 0,
-                    "type": {
-                        "type": "Reference",
-                        "target": "base/BaseRequest"
-                    }
-                }
-            ]
-        },
-        "PtlLogin/ResLogin": {
-            "type": "Interface",
-            "extends": [
-                {
-                    "id": 0,
-                    "type": {
-                        "type": "Reference",
-                        "target": "base/BaseResponse"
-                    }
-                }
-            ],
-            "properties": [
-                {
-                    "id": 0,
-                    "name": "id",
-                    "type": {
-                        "type": "Number"
                     }
                 }
             ]
@@ -443,6 +440,20 @@ export const serviceProto: ServiceProto<ServiceType> = {
                     "type": {
                         "type": "Reference",
                         "target": "../game/GameSystem/ResultType"
+                    }
+                },
+                {
+                    "id": 5,
+                    "name": "stateCount",
+                    "type": {
+                        "type": "Number"
+                    }
+                },
+                {
+                    "id": 6,
+                    "name": "isConn",
+                    "type": {
+                        "type": "Boolean"
                     }
                 }
             ]

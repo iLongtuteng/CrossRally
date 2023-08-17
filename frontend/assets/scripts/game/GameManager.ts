@@ -23,8 +23,6 @@ export class GameManager {
     public blueSprite: SpriteFrame = null;
     private _client: BaseWsClient<ServiceType>;
     private _isInit: boolean = false;
-    private _isLogin: boolean = false;
-    private _isStart: boolean = false;
 
     public initClient(host?: string): void {
         if (this._isInit) {
@@ -42,9 +40,6 @@ export class GameManager {
             }
         });
         this._client.listenMsg('server/RaceInfo', msg => {
-            if (this._isStart)
-                return;
-
             this.difficulty = msg.difficulty;
             this.winDis = msg.winDis;
             this.hillArr = msg.hillArr;
@@ -55,19 +50,12 @@ export class GameManager {
                 this.nameMap.set(nameObj.playerId, nameObj.patientName);
             }
             GameMsgs.send<any>(GameMsgs.Names.ReadyEnterRace);
-
-            this._isStart = true;
         });
         this._client.listenMsg('server/Frame', msg => {
             GameMsgs.send<GameSystemState>(GameMsgs.Names.ApplySystemState, msg.state);
         });
         this._client.listenMsg('server/RaceResult', msg => {
-            if (!this._isStart)
-                return;
-
             GameMsgs.send<number>(GameMsgs.Names.RaceShowResult, msg.winnerIdx);
-
-            this._isStart = false;
         });
         this._isInit = true;
         console.log('客户端初始化成功，连接到：' + hostStr);
@@ -96,32 +84,17 @@ export class GameManager {
         console.log('连接成功');
     }
 
-    public disconnect(): void {
-        if (this._client.isConnected)
-            this._client.disconnect();
-    }
+    // public disconnect(): void {
+    //     if (this._client.isConnected)
+    //         this._client.disconnect();
+    // }
 
-    public async login(): Promise<void> {
-        if (this._isLogin)
-            return;
-
-        let ret = await this._client.callApi('Login', {});
-
-        if (!ret.isSucc) {
-            console.log(ret.err.message);
-            return;
-        }
-
-        this.selfPlayerId = ret.res.id;
-        this._isLogin = true;
-        console.log('登录成功, playerId: ' + ret.res.id);
-    }
-
-    public async joinRace(teamIdx?: number, patientName?: string, playerId?: number, succCb?: Function, errCb?: Function): Promise<void> {
+    public async joinRace(isAdviser: boolean, playerId: number, teamIdx?: number, patientName?: string, succCb?: Function, errCb?: Function): Promise<void> {
         let ret = await this._client.callApi('JoinRace', {
+            isAdviser: isAdviser,
+            playerId: playerId,
             teamIdx: teamIdx,
-            patientName: patientName,
-            playerId: playerId
+            patientName: patientName
         });
 
         if (!ret.isSucc) {
@@ -130,12 +103,21 @@ export class GameManager {
         }
 
         succCb && succCb();
+        console.log('加入成功, playerId: ' + this.selfPlayerId);
     }
 
     public async startRace(difficulty: number): Promise<void> {
         let ret = await this._client.callApi('StartRace', {
             difficulty: difficulty
         });
+
+        if (!ret.isSucc) {
+            console.log(ret.err.message);
+        }
+    }
+
+    public async enterRace(): Promise<void> {
+        let ret = await this._client.callApi('EnterRace', {});
 
         if (!ret.isSucc) {
             console.log(ret.err.message);

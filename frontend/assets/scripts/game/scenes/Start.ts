@@ -93,7 +93,7 @@ export class Start extends FWKComponent {
                         await gameManager.connect();
                         this.startBtn.interactable = true;
 
-                        gameManager.joinRace(undefined, undefined, gameManager.selfPlayerId, () => { }, (err) => {
+                        gameManager.joinRace(gameManager.isAdviser, gameManager.selfPlayerId, undefined, undefined, () => { }, (err) => {
                             let warn = instantiate(this.warnPrefab);
                             warn.parent = this.node;
                             warn.getComponent(Warn).label.string = err;
@@ -108,17 +108,22 @@ export class Start extends FWKComponent {
                 });
 
                 await gameManager.connect();
-                await gameManager.login();
                 this.startBtn.interactable = true;
 
                 if (gameManager.isAdviser) {
-                    gameManager.joinRace();
+                    gameManager.selfPlayerId = 1;
+                    gameManager.joinRace(gameManager.isAdviser, gameManager.selfPlayerId);
                 } else {
+                    gameManager.selfPlayerId = 2;
                     let teamIdx = 0;
                     let patientName = '张三';
+                    // gameManager.selfPlayerId = 3;
                     // let teamIdx = 1;
                     // let patientName = '李四';
-                    gameManager.joinRace(teamIdx, patientName, undefined, () => { }, (err) => {
+                    // gameManager.selfPlayerId = 4;
+                    // let teamIdx = 0;
+                    // let patientName = '王五';
+                    gameManager.joinRace(gameManager.isAdviser, gameManager.selfPlayerId, teamIdx, patientName, () => { }, (err) => {
                         let warn = instantiate(this.warnPrefab);
                         warn.parent = this.node;
                         warn.getComponent(Warn).label.string = err;
@@ -169,7 +174,7 @@ export class Start extends FWKComponent {
                         await gameManager.connect();
                         this.startBtn.interactable = true;
 
-                        gameManager.joinRace(undefined, undefined, gameManager.selfPlayerId, () => { }, (err) => {
+                        gameManager.joinRace(gameManager.isAdviser, gameManager.selfPlayerId, undefined, undefined, () => { }, (err) => {
                             let warn = instantiate(this.warnPrefab);
                             warn.parent = this.node;
                             warn.getComponent(Warn).label.string = err;
@@ -184,16 +189,18 @@ export class Start extends FWKComponent {
                 });
 
                 await gameManager.connect();
-                await gameManager.login();
                 this.startBtn.interactable = true;
 
                 if (gameManager.isAdviser) {
-                    gameManager.joinRace();
+                    gameManager.selfPlayerId = 1;
+                    gameManager.joinRace(gameManager.isAdviser, gameManager.selfPlayerId);
                 } else {
-                    if (obj.teamIdx != null && obj.patientName != null) {
+                    if (obj.patientId != null && obj.teamIdx != null && obj.patientName != null) {
+                        console.log('obj.patientId: ' + obj.patientId);
                         console.log('obj.teamIdx: ' + obj.teamIdx);
                         console.log('obj.patientName: ' + obj.patientName);
-                        gameManager.joinRace(obj.teamIdx, obj.patientName, undefined, () => { }, (err) => {
+                        gameManager.selfPlayerId = obj.patientId;
+                        gameManager.joinRace(gameManager.isAdviser, gameManager.selfPlayerId, obj.teamIdx, obj.patientName, () => { }, (err) => {
                             let warn = instantiate(this.warnPrefab);
                             warn.parent = this.node;
                             warn.getComponent(Warn).label.string = err;
