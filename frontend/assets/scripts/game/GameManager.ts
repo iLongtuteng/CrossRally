@@ -23,6 +23,7 @@ export class GameManager {
     public blueSprite: SpriteFrame = null;
     private _client: BaseWsClient<ServiceType>;
     private _isInit: boolean = false;
+    private _isStart: boolean = false;
 
     public initClient(host?: string): void {
         if (this._isInit) {
@@ -40,6 +41,9 @@ export class GameManager {
             }
         });
         this._client.listenMsg('server/RaceInfo', msg => {
+            if (this._isStart)
+                return;
+
             this.difficulty = msg.difficulty;
             this.winDis = msg.winDis;
             this.hillArr = msg.hillArr;
@@ -50,12 +54,19 @@ export class GameManager {
                 this.nameMap.set(nameObj.playerId, nameObj.patientName);
             }
             GameMsgs.send<any>(GameMsgs.Names.ReadyEnterRace);
+
+            this._isStart = true;
         });
         this._client.listenMsg('server/Frame', msg => {
             GameMsgs.send<GameSystemState>(GameMsgs.Names.ApplySystemState, msg.state);
         });
         this._client.listenMsg('server/RaceResult', msg => {
+            if (!this._isStart)
+                return;
+
             GameMsgs.send<number>(GameMsgs.Names.RaceShowResult, msg.winnerIdx);
+
+            this._isStart = false;
         });
         this._isInit = true;
         console.log('客户端初始化成功，连接到：' + hostStr);

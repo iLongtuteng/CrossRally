@@ -88,6 +88,7 @@ export class Game extends FWKComponent {
     private _trainingTime: number = 0;
     private _tweensMap: Map<number, TweenPool> = new Map<number, TweenPool>();
     private _posMap: Map<number, Vec3> = new Map<number, Vec3>();
+    private _connCount: number = 0;
 
     async onLoad() {
         window.addEventListener('message', this._onMessage.bind(this));
@@ -340,6 +341,11 @@ export class Game extends FWKComponent {
         if (this._trainingTime >= 600 && gameManager.isAdviser) {
             gameManager.endRace();
         }
+
+        this._connCount++;
+        if (this._connCount >= 3) {
+            console.log('连接已断开');
+        }
     }
 
     private _getTimeStr(time: number): string {
@@ -407,6 +413,8 @@ export class Game extends FWKComponent {
     }
 
     public onMsg_ApplySystemState(msg: FWKMsg<GameSystemState>): boolean {
+        this._connCount = 0;
+
         let systemState: GameSystemState = msg.data;
         this._rankArr = [];
 
@@ -440,7 +448,7 @@ export class Game extends FWKComponent {
                     // if (entry[1]) {
                     //     entry[1].position = new Vec3(ball.pos.x, ball.pos.y, 0);
                     // }
-                    if (ball.isConn) {
+                    if (ball.isConn && ball.pos.x != 0 && ball.pos.y != 0) {
                         this._tweenPos(entry[0], ball.pos);
                     }
 
@@ -470,7 +478,7 @@ export class Game extends FWKComponent {
                             // if (entry[1]) {
                             //     entry[1].position = new Vec3(ball.pos.x, ball.pos.y, 0);
                             // }
-                            if (ball.isConn) {
+                            if (ball.isConn && ball.pos.x != 0 && ball.pos.y != 0) {
                                 this._tweenPos(entry[0], ball.pos);
                             }
                         }
@@ -494,7 +502,7 @@ export class Game extends FWKComponent {
                         // if (entry[1]) {
                         //     entry[1].position = new Vec3(ball.pos.x, ball.pos.y, 0);
                         // }
-                        if (ball.isConn) {
+                        if (ball.isConn && ball.pos.x != 0 && ball.pos.y != 0) {
                             this._tweenPos(entry[0], ball.pos);
                         }
                     }
