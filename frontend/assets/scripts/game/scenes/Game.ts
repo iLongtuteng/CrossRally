@@ -67,6 +67,9 @@ export class Game extends FWKComponent {
     @property(Label)
     timeLbl: Label;
 
+    @property(Label)
+    skipLbl: Label;
+
     @property(Button)
     endBtn: Button;
 
@@ -86,6 +89,7 @@ export class Game extends FWKComponent {
     private _heartState: number = 0;
     private _isLeader: boolean = false;
     private _trainingTime: number = 0;
+    private _skipTime: number = 3;
     private _tweensMap: Map<number, TweenPool> = new Map<number, TweenPool>();
     private _posMap: Map<number, Vec3> = new Map<number, Vec3>();
     private _connCount: number = 0;
@@ -602,18 +606,37 @@ export class Game extends FWKComponent {
             this.result.getChildByName('Label').getComponent(Label).string = '训练结束';
         }
 
-        const messageStr = JSON.stringify({
-            type: 'end',
-            save_data: this._trainingTime >= 90,
-            games: []
-        });
-        window.parent.postMessage(messageStr, '*');
-        console.log('end: ' + messageStr);
-
-        this._trainingTime = 0;
-        this._endTimer();
+        this._startSkip();
 
         return true;
+    }
+
+    private _startSkip(): void {
+        this._skipCallback();
+        this.schedule(this._skipCallback, 1);
+    }
+
+    private _endSkip(): void {
+        this.unschedule(this._skipCallback);
+    }
+
+    private _skipCallback(): void {
+        this.skipLbl.string = this._skipTime.toString() + '秒后跳转';
+        if (this._skipTime <= 0) {
+            const messageStr = JSON.stringify({
+                type: 'end',
+                save_data: this._trainingTime >= 90,
+                games: []
+            });
+            window.parent.postMessage(messageStr, '*');
+            console.log('end: ' + messageStr);
+
+            this._trainingTime = 0;
+            this._endTimer();
+            this._endSkip();
+        }
+
+        this._skipTime--;
     }
 
     update(deltaTime: number) {

@@ -3227,6 +3227,10 @@
     },
     "_enabled": true,
     "__prefab": null,
+    "games": {
+      "__uuid__": "ef2e17a8-b952-41c9-9ffb-0bfc8baf307c",
+      "__expectedType__": "cc.JsonAsset"
+    },
     "adviserView": {
       "__id__": 14
     },

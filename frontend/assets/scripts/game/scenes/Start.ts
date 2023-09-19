@@ -1,4 +1,4 @@
-import { _decorator, Animation, assert, AudioSource, Button, director, find, instantiate, Node, Prefab, resources, SpriteFrame } from 'cc';
+import { _decorator, Animation, assert, AudioSource, Button, director, find, instantiate, JsonAsset, Node, Prefab, resources, SpriteFrame } from 'cc';
 import { DEV } from 'cc/env';
 import FWKComponent from '../../fwk/FWKComponent';
 import { FWKMsg } from '../../fwk/mvc/FWKMvc';
