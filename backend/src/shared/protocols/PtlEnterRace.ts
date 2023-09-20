@@ -1,10 +1,10 @@
 import { BaseRequest, BaseResponse, BaseConf } from "./base";
 
-export interface ReqLeaveRace extends BaseRequest {
+export interface ReqEnterRace extends BaseRequest {
     
 }
 
-export interface ResLeaveRace extends BaseResponse {
+export interface ResEnterRace extends BaseResponse {
     
 }
 

@@ -1,4 +1,4 @@
-import { _decorator, Animation, assert, AudioSource, Button, director, find, instantiate, Node, Prefab, resources, SpriteFrame } from 'cc';
+import { _decorator, Animation, assert, AudioSource, Button, director, find, instantiate, JsonAsset, Node, Prefab, resources, SpriteFrame } from 'cc';
 import { DEV } from 'cc/env';
 import FWKComponent from '../../fwk/FWKComponent';
 import { FWKMsg } from '../../fwk/mvc/FWKMvc';
@@ -36,7 +36,7 @@ export class Start extends FWKComponent {
 
     private _difficulty: number = 1;
 
-    onLoad() {
+    async onLoad() {
         resources.load('textures/BtnGreenNormal/spriteFrame', SpriteFrame, (err, res) => {
             if (err) {
                 console.log(err);
@@ -70,43 +70,68 @@ export class Start extends FWKComponent {
         this.startBtn.interactable = false;
 
         if (DEV) {
-            gameManager.isAdviser = true;
-            // gameManager.isAdviser = false;
+            setTimeout(async () => {
+                gameManager.isAdviser = true;
+                // gameManager.isAdviser = false;
 
-            if (gameManager.isAdviser) {
-                this.adviserView.active = true;
-                this.patientView.active = false;
-            } else {
-                this.adviserView.active = false;
-                this.patientView.active = true;
-            }
+                if (gameManager.isAdviser) {
+                    this.adviserView.active = true;
+                    this.patientView.active = false;
+                } else {
+                    this.adviserView.active = false;
+                    this.patientView.active = true;
+                }
 
-            gameManager.initClient();
-            gameManager.connect(() => {
-                gameManager.login(() => {
-                    this.startBtn.interactable = true;
+                gameManager.initClient();
+                gameManager.postDisconnect(() => {
+                    this.startBtn.interactable = false;
+                    let warn = instantiate(this.warnPrefab);
+                    warn.parent = this.node;
+                    warn.getComponent(Warn).label.string = '断线重连';
+                    console.log('意外断线, 100毫秒后重连');
+                    setTimeout(async () => {
+                        await gameManager.connect();
+                        this.startBtn.interactable = true;
 
-                    let teamArr = [];
-                    for (let i = 0; i < 2; i++) {
-                        teamArr.push(i);
-                    }
-                    gameManager.updateTeams(teamArr, () => {
-                        if (gameManager.isAdviser) {
-                            gameManager.joinRace();
-                        } else {
-                            let teamIdx = 0;
-                            // let teamIdx = 1;
-                            gameManager.joinRace(teamIdx, () => { }, (err) => {
-                                let warn = instantiate(this.warnPrefab);
-                                warn.parent = this.node;
-                                warn.getComponent(Warn).label.string = err;
-                            });
-                        }
-                    });
+                        gameManager.joinRace(gameManager.isAdviser, gameManager.selfPlayerId, undefined, undefined, () => { }, (err) => {
+                            let warn = instantiate(this.warnPrefab);
+                            warn.parent = this.node;
+                            warn.getComponent(Warn).label.string = err;
+                        });
+
+                        // let res = await gameManager.connect();
+                        // 重连也错误，弹出错误提示
+                        // if(!res.isSucc){
+                        //     alert('网络错误，连接已断开');
+                        // }
+                    }, 100);
                 });
-            });
 
-            gameManager.delayTime = 2000;
+                await gameManager.connect();
+                this.startBtn.interactable = true;
+
+                if (gameManager.isAdviser) {
+                    gameManager.selfPlayerId = 1;
+                    gameManager.joinRace(gameManager.isAdviser, gameManager.selfPlayerId);
+                } else {
+                    gameManager.selfPlayerId = 2;
+                    let teamIdx = 0;
+                    let patientName = '张三';
+                    // gameManager.selfPlayerId = 3;
+                    // let teamIdx = 1;
+                    // let patientName = '李四';
+                    // gameManager.selfPlayerId = 4;
+                    // let teamIdx = 0;
+                    // let patientName = '王五';
+                    gameManager.joinRace(gameManager.isAdviser, gameManager.selfPlayerId, teamIdx, patientName, () => { }, (err) => {
+                        let warn = instantiate(this.warnPrefab);
+                        warn.parent = this.node;
+                        warn.getComponent(Warn).label.string = err;
+                    });
+                }
+
+                gameManager.delayTime = 2000;
+            }, 1000);
         }
     }
 
@@ -114,7 +139,7 @@ export class Start extends FWKComponent {
         window.removeEventListener('message', this._onMessage.bind(this));
     }
 
-    private _onMessage(e: MessageEvent): void {
+    private async _onMessage(e: MessageEvent): Promise<void> {
         let obj = JSON.parse(e.data);
 
         if (obj.type == 'is_ready') {
@@ -127,10 +152,6 @@ export class Start extends FWKComponent {
                 if (gameManager.isAdviser) {
                     this.adviserView.active = true;
                     this.patientView.active = false;
-
-                    this.scheduleOnce(() => {
-                        this._refreshDiff(this._difficulty);
-                    }, 0.2);
                 } else {
                     this.adviserView.active = false;
                     this.patientView.active = true;
@@ -143,38 +164,62 @@ export class Start extends FWKComponent {
             if (obj.host != null) {
                 console.log('obj.host: ' + obj.host);
                 gameManager.initClient(obj.host);
-                gameManager.connect(() => {
-                    gameManager.login(() => {
+                gameManager.postDisconnect(() => {
+                    this.startBtn.interactable = false;
+                    let warn = instantiate(this.warnPrefab);
+                    warn.parent = this.node;
+                    warn.getComponent(Warn).label.string = '断线重连';
+                    console.log('意外断线, 100毫秒后重连');
+                    setTimeout(async () => {
+                        await gameManager.connect();
                         this.startBtn.interactable = true;
 
-                        if (obj.teamLen != null) {
-                            console.log('obj.teamLen: ' + obj.teamLen);
-                            let teamArr = [];
-                            for (let i = 0; i < obj.teamLen; i++) {
-                                teamArr.push(i);
-                            }
-                            gameManager.updateTeams(teamArr, () => {
-                                if (gameManager.isAdviser) {
-                                    gameManager.joinRace();
-                                } else {
-                                    if (obj.teamIdx != null) {
-                                        console.log('obj.teamIdx: ' + obj.teamIdx);
-                                        gameManager.joinRace(obj.teamIdx, () => { }, (err) => {
-                                            let warn = instantiate(this.warnPrefab);
-                                            warn.parent = this.node;
-                                            warn.getComponent(Warn).label.string = err;
-                                        });
-                                    }
-                                }
-                            });
-                        }
-                    });
+                        gameManager.joinRace(gameManager.isAdviser, gameManager.selfPlayerId, undefined, undefined, () => { }, (err) => {
+                            let warn = instantiate(this.warnPrefab);
+                            warn.parent = this.node;
+                            warn.getComponent(Warn).label.string = err;
+                        });
+
+                        // let res = await gameManager.connect();
+                        // 重连也错误，弹出错误提示
+                        // if(!res.isSucc){
+                        //     alert('网络错误，连接已断开');
+                        // }
+                    }, 100);
                 });
+
+                await gameManager.connect();
+                this.startBtn.interactable = true;
+
+                if (gameManager.isAdviser) {
+                    gameManager.selfPlayerId = 1;
+                    gameManager.joinRace(gameManager.isAdviser, gameManager.selfPlayerId);
+                } else {
+                    if (obj.patientId != null && obj.teamIdx != null && obj.patientName != null) {
+                        console.log('obj.patientId: ' + obj.patientId);
+                        console.log('obj.teamIdx: ' + obj.teamIdx);
+                        console.log('obj.patientName: ' + obj.patientName);
+                        gameManager.selfPlayerId = obj.patientId;
+                        gameManager.joinRace(gameManager.isAdviser, gameManager.selfPlayerId, obj.teamIdx, obj.patientName, () => { }, (err) => {
+                            let warn = instantiate(this.warnPrefab);
+                            warn.parent = this.node;
+                            warn.getComponent(Warn).label.string = err;
+                        });
+                    }
+                }
             }
 
             if (obj.delay != null) {
                 console.log('obj.delay: ' + obj.delay);
                 gameManager.delayTime = obj.delay - 3000;
+            }
+        }
+
+        if (obj.type == 'start_game') {
+            console.log('obj.type == "start_game"');
+            if (gameManager.isAdviser) {
+                gameManager.startRace(this._difficulty);
+                this.startBtn.interactable = false;
             }
         }
 
