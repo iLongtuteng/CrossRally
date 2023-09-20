@@ -5,7 +5,7 @@
       "width": 1280,
       "height": 720,
       "fitWidth": true,
-      "fitHeight": true
+      "fitHeight": false
     }
   },
   "layer": [

@@ -1,10 +1,13 @@
-import { _decorator, Component, RigidBody2D } from 'cc';
+import { _decorator, Component, Label, RigidBody2D } from 'cc';
 const { ccclass, property } = _decorator;
 
 const MOVE_RIGHT = 2;
 
 @ccclass('Ball')
 export class Ball extends Component {
+
+    @property(Label)
+    label: Label;
 
     private moveFlags: number = 0;
     private maxSpeed: number = 0;

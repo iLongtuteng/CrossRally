@@ -1,4 +1,4 @@
-import { _decorator, Component, Node, PolygonCollider2D, RigidBody2D, ERigidBody2DType, Vec2, Vec3, Graphics, Layers } from 'cc';
+import { _decorator, Component, Node, PolygonCollider2D, RigidBody2D, ERigidBody2DType, Vec2, Vec3, Graphics, Layers, Prefab, Label, instantiate } from 'cc';
 import { gameManager } from '../GameManager';
 import { gameConfig } from '../../shared/game/GameConfig';
 const { ccclass, property } = _decorator;
@@ -18,11 +18,11 @@ export interface hillPiece {
 @ccclass('World')
 export class World extends Component {
 
-    @property(Node)
-    startNode: Node;
+    @property(Prefab)
+    signPrefab: Prefab;
 
     @property(Node)
-    finishNode: Node;
+    signs: Node;
 
     public ball: Node = null;
 
@@ -30,6 +30,7 @@ export class World extends Component {
     private _xOffset: number = -360;
     private _hillIdx: number = 0;
     private _hills: hillPiece[] = [];
+    private _signs: Node[] = [];
 
     onLoad() {
         for (let hill of gameManager.hillArr) {
@@ -41,7 +42,7 @@ export class World extends Component {
         }
     }
 
-    public updateHill(): void {
+    public resetHill(): void {
         this._xOffset = -360;
         this._hillIdx = 0;
         this._xOffset += this._totalWidth * Math.floor(this.ball.position.x / this._totalWidth); //小球运动距离等于地形xOffset的增量
@@ -52,16 +53,10 @@ export class World extends Component {
         }
 
         this.node.removeAllChildren();
+        this.signs.removeAllChildren();
     }
 
     private _generateHillPiece(xOffset: number, points: Vec2[]): void {
-        if (xOffset >= 640 && xOffset < 640 + gameConfig.pixelStep) {
-            this.startNode.position = new Vec3(xOffset, points[1].y + 50, 0);
-        }
-        if (xOffset >= 640 + gameManager.winDis * gameConfig.disUnit && xOffset < 640 + gameConfig.pixelStep + gameManager.winDis * gameConfig.disUnit) {
-            this.finishNode.position = new Vec3(xOffset, points[1].y + 50, 0);
-        }
-
         let first = this._hills[0];
         if (first && this.ball && (this.ball.position.x + 640 - first.node.position.x > 1000)) {
             first.node.position = new Vec3(xOffset, first.node.position.y, first.node.position.z);
@@ -133,6 +128,37 @@ export class World extends Component {
         this._hills.push({ node: node, collider: collider });
     }
 
+    private _generateSign(xOffset: number, points: Vec2[]): void {
+        let firstSign = this._signs[0];
+        if (firstSign && this.ball && (this.ball.position.x + 640 - firstSign.position.x > 1000)) {
+            firstSign.position = new Vec3(xOffset, points[1].y + 50, 0);
+            let distance = gameManager.winDis * gameConfig.disUnit - (xOffset - 640);
+            if (distance == 0) {
+                firstSign.getChildByName('Label').getComponent(Label).string = 'FINISH!';
+            } else {
+                firstSign.getChildByName('Label').getComponent(Label).string = distance / 100 + 'm';
+            }
+
+            if (!firstSign.isChildOf(this.signs)) {
+                firstSign.parent = this.signs;
+            }
+
+            this._signs.push(this._signs.shift());
+            return;
+        }
+
+        let sign = instantiate(this.signPrefab);
+        sign.position = new Vec3(xOffset, points[1].y + 50, 0);
+        let distance = gameManager.winDis * gameConfig.disUnit - (xOffset - 640);
+        if (distance == 0) {
+            sign.getChildByName('Label').getComponent(Label).string = 'FINISH!';
+        } else {
+            sign.getChildByName('Label').getComponent(Label).string = distance / 100 + 'm';
+        }
+        sign.parent = this.signs;
+        this._signs.push(sign);
+    }
+
     private _generateHill(): void {
         let hill: Hill = gameManager.hillArr[this._hillIdx];
         this._hillIdx++;
@@ -161,6 +187,9 @@ export class World extends Component {
             points.push(new Vec2(gameConfig.pixelStep, 0));
 
             this._generateHillPiece(xOffset + j * gameConfig.pixelStep, points);
+            if (xOffset + j * gameConfig.pixelStep - 640 >= 0 && xOffset + j * gameConfig.pixelStep - 640 <= gameManager.winDis * gameConfig.disUnit && (xOffset + j * gameConfig.pixelStep - 640) % gameConfig.disUnit == 0) {
+                this._generateSign(xOffset + j * gameConfig.pixelStep, points);
+            }
         }
 
         yOffset += randomHeight;
@@ -178,6 +207,9 @@ export class World extends Component {
             points.push(new Vec2(gameConfig.pixelStep, 0));
 
             this._generateHillPiece(xOffset + j * gameConfig.pixelStep, points);
+            if (xOffset + j * gameConfig.pixelStep - 640 >= 0 && xOffset + j * gameConfig.pixelStep - 640 <= gameManager.winDis * gameConfig.disUnit && (xOffset + j * gameConfig.pixelStep - 640) % gameConfig.disUnit == 0) {
+                this._generateSign(xOffset + j * gameConfig.pixelStep, points);
+            }
         }
 
         yOffset -= randomHeight;
